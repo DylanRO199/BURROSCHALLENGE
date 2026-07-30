@@ -1,0 +1,27 @@
+import type { Rank, TournamentStatistics } from './types';
+
+export type PublicRefreshStatus =
+  | 'idle'
+  | 'refreshing'
+  | 'temporary_error'
+  | 'riot_api_key_invalid';
+
+export type LeaderboardDto = {
+  tournament: {
+    name: string;
+    startsAt: string | null;
+  };
+  refresh: {
+    status: PublicRefreshStatus;
+    lastSuccessfulAt: string | null;
+    stale: boolean;
+  };
+  players: Array<{
+    position: number;
+    riotId: string;
+    profileIconUrl: string | null;
+    rank: Rank;
+    stats: TournamentStatistics;
+    error: 'account_not_found' | null;
+  }>;
+};
