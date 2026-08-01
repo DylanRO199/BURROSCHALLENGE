@@ -264,13 +264,11 @@ export function LeaderboardClient({
   const [data, setData] = useState(initialData);
   const [refreshing, setRefreshing] = useState(false);
   const autoRefreshStarted = useRef(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'tierlist'>('leaderboard');
 
   const refresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
-    setMessage(null);
 
     setData((current) => ({
       ...current,
@@ -286,43 +284,25 @@ export function LeaderboardClient({
 
       const leaderboard = (await leaderboardResponse.json()) as LeaderboardDto;
       setData(leaderboard);
-      setMessage(null);
     } catch (error) {
-      console.error('ERROR:', error);
+      console.error('ERROR durante la actualización silenciosa:', error);
       setData((current) => ({
         ...current,
         refresh: { ...current.refresh, status: 'temporary_error' },
       }));
-      setMessage('Error al actualizar');
     } finally {
       setRefreshing(false);
     }
   }, [refreshing]);
 
+  // Real-time auto sync: silently run refresh() every 60 seconds
   useEffect(() => {
-    if (data.refresh.stale && !autoRefreshStarted.current) {
-      autoRefreshStarted.current = true;
+    const interval = setInterval(() => {
       void refresh();
-    }
-  }, [data.refresh.stale, refresh]);
-
-  // Real-time auto sync: poll the leaderboard database data every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch('/api/leaderboard', { cache: 'no-store' });
-        if (response.ok) {
-          const latestData = (await response.json()) as LeaderboardDto;
-          setData(latestData);
-          setMessage(null);
-        }
-      } catch (err) {
-        console.warn('Error en la sincronización en segundo plano:', err);
-      }
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refresh]);
 
   const updatedAt = data.refresh.lastSuccessfulAt
     ? new Intl.DateTimeFormat('es-CL', {
@@ -370,13 +350,8 @@ export function LeaderboardClient({
             <a href="/estadisticas" className="lol-btn lol-btn-ghost" style={{ textDecoration: 'none' }}>
               📊 Estadísticas
             </a>
-            <button className="lol-btn" onClick={() => void refresh()} disabled={refreshing}>
-              {refreshing ? 'Actualizando...' : 'Actualizar ranking'}
-            </button>
           </div>
         </div>
-
-        {message && <p className="lol-error-msg">{message}</p>}
       </header>
 
       {data.players.length > 0 && (
