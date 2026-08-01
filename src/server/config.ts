@@ -11,6 +11,7 @@ const playerSchema = z.object({
 const tournamentSchema = z.object({
   name: z.string().min(1),
   startsAt: z.string().datetime({ offset: true }).nullable(),
+  endsAt: z.string().datetime({ offset: true }).nullable(),
   timezone: z.literal('America/Santiago'),
   refreshTtlSeconds: z.number().int().min(60).max(3600),
 });

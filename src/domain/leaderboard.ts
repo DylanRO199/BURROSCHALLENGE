@@ -18,10 +18,14 @@ export type LeaderboardDto = {
   };
   players: Array<{
     position: number;
+    positionChange: number;
     riotId: string;
     profileIconUrl: string | null;
     rank: Rank;
     stats: TournamentStatistics;
     error: 'account_not_found' | null;
+    isOnline: boolean;
+    activeGameStartTime: string | null;
+    activeGameQueueId: number | null;
   }>;
 };

@@ -25,6 +25,7 @@ export class DrizzleLeaderboardRepository {
     id: string;
     name: string;
     startsAt: Date | null;
+    endsAt: Date | null;
     timezone: string;
     refreshTtlSeconds: number;
   }) {
@@ -36,6 +37,7 @@ export class DrizzleLeaderboardRepository {
         set: {
           name: data.name,
           startsAt: data.startsAt,
+          endsAt: data.endsAt,
           timezone: data.timezone,
           refreshTtlSeconds: data.refreshTtlSeconds,
         },
@@ -51,15 +53,23 @@ export class DrizzleLeaderboardRepository {
     return result[0] || null;
   }
 
+  async deactivatePlayer(riotId: string) {
+    await db
+      .update(players)
+      .set({ active: false })
+      .where(eq(players.riotId, riotId));
+  }
+
   async upsertPlayer(player: {
     riotId: string;
     platform: string;
     gameName: string;
     tagLine: string;
     puuid: string;
+    summonerId: string;
     accountCluster: string;
     profileIconId: number;
-  }) {
+  }): Promise<string> {
     const existing = await this.getPlayerByRiotId(player.riotId);
     if (existing) {
       await db
@@ -68,6 +78,7 @@ export class DrizzleLeaderboardRepository {
           gameName: player.gameName,
           tagLine: player.tagLine,
           puuid: player.puuid,
+          summonerId: player.summonerId,
           accountCluster: player.accountCluster,
           profileIconId: player.profileIconId,
           active: true,
@@ -84,6 +95,7 @@ export class DrizzleLeaderboardRepository {
           gameName: player.gameName,
           tagLine: player.tagLine,
           puuid: player.puuid,
+          summonerId: player.summonerId,
           accountCluster: player.accountCluster,
           profileIconId: player.profileIconId,
           active: true,
@@ -92,6 +104,23 @@ export class DrizzleLeaderboardRepository {
       return result[0].id;
     }
   }
+
+  async updatePlayerOnlineStatus(
+    playerId: string,
+    isOnline: boolean,
+    activeGameStartTime?: Date | null,
+    activeGameQueueId?: number | null
+  ) {
+    await db
+      .update(players)
+      .set({
+        isOnline,
+        activeGameStartTime: activeGameStartTime ?? null,
+        activeGameQueueId: activeGameQueueId ?? null,
+      })
+      .where(eq(players.id, playerId));
+  }
+
 
   async saveRankSnapshot(data: {
     playerId: string;
@@ -123,6 +152,15 @@ export class DrizzleLeaderboardRepository {
     return result[0] || null;
   }
 
+  async getRankSnapshots(playerId: string, limit: number) {
+    return db
+      .select()
+      .from(rankSnapshots)
+      .where(eq(rankSnapshots.playerId, playerId))
+      .orderBy(desc(rankSnapshots.observedAt))
+      .limit(limit);
+  }
+
   async getMatches(playerId: string, limit: number) {
     return db
       .select()
@@ -139,7 +177,8 @@ export class DrizzleLeaderboardRepository {
       playedAt: Date;
       queueId: number;
       championName: string;
-      win: boolean;
+      lane?: string | null;
+      win: boolean | null;
       kills: number;
       deaths: number;
       assists: number;
@@ -151,5 +190,21 @@ export class DrizzleLeaderboardRepository {
       .insert(playerMatches)
       .values(matches.map((m) => ({ ...m, playerId })))
       .onConflictDoNothing();
+  }
+
+  async getChampionStats() {
+    return db
+      .select({
+        championName: playerMatches.championName,
+        games: sql<number>`count(*)::int`,
+        wins: sql<number>`sum(case when ${playerMatches.win} = true then 1 else 0 end)::int`,
+        losses: sql<number>`sum(case when ${playerMatches.win} = false then 1 else 0 end)::int`,
+        kills: sql<number>`sum(${playerMatches.kills})::int`,
+        deaths: sql<number>`sum(${playerMatches.deaths})::int`,
+        assists: sql<number>`sum(${playerMatches.assists})::int`,
+      })
+      .from(playerMatches)
+      .groupBy(playerMatches.championName)
+      .orderBy(sql`count(*) desc`);
   }
 }

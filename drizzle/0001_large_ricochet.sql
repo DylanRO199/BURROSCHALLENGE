@@ -1,0 +1,1 @@
+ALTER TABLE "player_matches" ADD COLUMN "lane" text;

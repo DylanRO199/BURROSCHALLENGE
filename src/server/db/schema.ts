@@ -23,6 +23,7 @@ export const tournaments = pgTable('tournaments', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   startsAt: timestamp('starts_at', { withTimezone: true, mode: 'date' }),
+  endsAt: timestamp('ends_at', { withTimezone: true, mode: 'date' }),
   timezone: text('timezone').notNull(),
   refreshTtlSeconds: integer('refresh_ttl_seconds').notNull(),
   lastAttemptedAt: timestamp('last_attempted_at', { withTimezone: true, mode: 'date' }),
@@ -39,13 +40,18 @@ export const players = pgTable(
     gameName: text('game_name'),
     tagLine: text('tag_line'),
     puuid: text('puuid'),
+    summonerId: text('summoner_id'),
     accountCluster: text('account_cluster'),
     profileIconId: integer('profile_icon_id'),
     active: boolean('active').notNull().default(true),
     errorCategory: text('error_category'),
+    isOnline: boolean('is_online').notNull().default(false),
+    activeGameStartTime: timestamp('active_game_start_time', { withTimezone: true, mode: 'date' }),
+    activeGameQueueId: integer('active_game_queue_id'),
   },
   (table) => [uniqueIndex('players_riot_id_unique').on(table.riotId)]
 );
+
 
 export const rankSnapshots = pgTable(
   'rank_snapshots',
@@ -72,7 +78,8 @@ export const playerMatches = pgTable(
     playedAt: timestamp('played_at', { withTimezone: true, mode: 'date' }).notNull(),
     queueId: integer('queue_id').notNull(),
     championName: text('champion_name').notNull(),
-    win: boolean('win').notNull(),
+    lane: text('lane'),
+    win: boolean('win'),
     kills: integer('kills').notNull(),
     deaths: integer('deaths').notNull(),
     assists: integer('assists').notNull(),
@@ -88,3 +95,14 @@ export const refreshLeases = pgTable('refresh_leases', {
   id: text('id').primaryKey(),
   leaseUntil: timestamp('lease_until', { withTimezone: true, mode: 'date' }).notNull(),
 });
+
+export const visitors = pgTable(
+  'visitors',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sessionId: text('session_id').notNull(),
+    firstSeenAt: timestamp('first_seen_at', { withTimezone: true, mode: 'date' }).notNull(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true, mode: 'date' }).notNull(),
+  },
+  (table) => [uniqueIndex('visitors_session_id_unique').on(table.sessionId)]
+);

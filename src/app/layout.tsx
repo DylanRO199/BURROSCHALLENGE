@@ -3,9 +3,9 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SoloQ Challenge',
+  title: 'BURROS QUEUE CHALLENGE - SoloQ Leaderboard',
   icons: { icon: '/icon.svg' },
-  description: 'Leaderboard competitivo de SoloQ en LAS.',
+  description: 'Leaderboard oficial del torneo BURROS QUEUE CHALLENGE en League of Legends LAS.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

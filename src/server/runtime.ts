@@ -14,6 +14,7 @@ export async function getLeaderboard() {
     id: 'soloq-challenge',
     name: config.tournament.name,
     startsAt: config.tournament.startsAt ? new Date(config.tournament.startsAt) : null,
+    endsAt: config.tournament.endsAt ? new Date(config.tournament.endsAt) : null,
     timezone: config.tournament.timezone,
     refreshTtlSeconds: config.tournament.refreshTtlSeconds,
   });
@@ -32,6 +33,7 @@ export async function runRefresh() {
     id: 'soloq-challenge',
     name: config.tournament.name,
     startsAt: config.tournament.startsAt ? new Date(config.tournament.startsAt) : null,
+    endsAt: config.tournament.endsAt ? new Date(config.tournament.endsAt) : null,
     timezone: config.tournament.timezone,
     refreshTtlSeconds: config.tournament.refreshTtlSeconds,
   });
@@ -44,6 +46,12 @@ export async function runRefresh() {
     now: () => new Date(),
     players: config.players,
     startsAt: config.tournament.startsAt ? new Date(config.tournament.startsAt) : null,
+    endsAt: config.tournament.endsAt ? new Date(config.tournament.endsAt) : null,
     refreshTtlSeconds: config.tournament.refreshTtlSeconds,
   }).refresh();
+}
+
+export async function getChampionStats() {
+  const repository = new DrizzleLeaderboardRepository();
+  return repository.getChampionStats();
 }

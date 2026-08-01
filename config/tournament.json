@@ -1,6 +1,7 @@
 {
-  "name": "SoloQ Challenge",
-  "startsAt": null,
+  "name": "BURROS QUEUE CHALLENGE",
+  "startsAt": "2026-07-30T00:00:00-04:00",
+  "endsAt": "2026-08-30T23:59:59-04:00",
   "timezone": "America/Santiago",
   "refreshTtlSeconds": 300
 }

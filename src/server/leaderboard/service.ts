@@ -58,25 +58,36 @@ export function createLeaderboardService({
 
 			const playerDtos = await Promise.all(
 				players.map(async (p: any) => {
-					const snapshot = await repository.getLatestRankSnapshot(p.id);
+					const snapshots = await repository.getRankSnapshots(p.id, 2);
+					const snapshot = snapshots[0] || null;
+					const prevSnapshot = snapshots[1] || null;
+
 					const matches = await repository.getMatches(p.id, 20);
 
-					const recentResults = matches.map((m: any) => (m.win ? 'W' : 'L')) as Array<'W' | 'L'>;
+					const recentResults = matches.map((m: any) => ({
+						result: (m.win === null ? 'R' : m.win ? 'W' : 'L') as 'W' | 'L' | 'R',
+						championName: m.championName,
+						kills: m.kills ?? 0,
+						deaths: m.deaths ?? 0,
+						assists: m.assists ?? 0,
+					}));
 
-					const games = matches.length;
-					const wins = matches.filter((m: any) => m.win).length;
+					const validMatches = matches.filter((m: any) => m.win !== null);
+					const games = validMatches.length;
+					const wins = validMatches.filter((m: any) => m.win).length;
 					const losses = games - wins;
 					const winRate = games > 0 ? Math.round((wins / games) * 100) : 0;
 
-					const totalKills = matches.reduce((s: number, m: any) => s + (m.kills || 0), 0);
-					const totalDeaths = matches.reduce((s: number, m: any) => s + (m.deaths || 0), 0);
-					const totalAssists = matches.reduce((s: number, m: any) => s + (m.assists || 0), 0);
+					const totalKills = validMatches.reduce((s: number, m: any) => s + (m.kills || 0), 0);
+					const totalDeaths = validMatches.reduce((s: number, m: any) => s + (m.deaths || 0), 0);
+					const totalAssists = validMatches.reduce((s: number, m: any) => s + (m.assists || 0), 0);
 					const kda = games > 0 ? (totalKills + totalAssists) / Math.max(1, totalDeaths) : 0;
 
 					// streak calculation
 					let streak = 0;
 					let streakType: 'W' | 'L' | null = null;
 					for (const m of matches) {
+						if (m.win === null) continue; // Skip remakes
 						const result = m.win ? 'W' : 'L';
 						if (streakType === null) {
 							streakType = result;
@@ -95,6 +106,16 @@ export function createLeaderboardService({
 						.sort((a, b) => b.games - a.games)
 						.slice(0, 3);
 
+					// Most played lane
+					const laneMap: Record<string, number> = {};
+					for (const m of matches) {
+						const l = (m as any).lane;
+						if (l && l !== '' && l !== 'Invalid') laneMap[l] = (laneMap[l] || 0) + 1;
+					}
+					const topLane = Object.keys(laneMap).length > 0
+						? Object.entries(laneMap).sort((a, b) => b[1] - a[1])[0][0]
+						: null;
+
 					const rank: Rank = snapshot
 						? {
 								tier: (snapshot.tier as Rank['tier']) || 'UNRANKED',
@@ -103,6 +124,14 @@ export function createLeaderboardService({
 							}
 						: ({ tier: 'UNRANKED', division: null, leaguePoints: 0 } as Rank);
 
+					const prevRank = prevSnapshot
+						? {
+								tier: (prevSnapshot.tier as Rank['tier']) || 'UNRANKED',
+								division: (prevSnapshot.division as Rank['division']) || null,
+								leaguePoints: prevSnapshot.leaguePoints ?? 0,
+							}
+						: null;
+
 					const profileIconId = snapshot?.profileIconId ?? p.profileIconId ?? null;
 					const profileIconUrl = profileIconId ? `https://ddragon.leagueoflegends.com/cdn/${iconVersion}/img/profileicon/${profileIconId}.png` : null;
 
@@ -110,6 +139,7 @@ export function createLeaderboardService({
 						riotId: p.riotId,
 						profileIconUrl,
 						rank,
+						prevRank,
 						stats: {
 							games,
 							wins,
@@ -123,8 +153,14 @@ export function createLeaderboardService({
 							averageAssists: games > 0 ? totalAssists / games : 0,
 							recentResults,
 							topChampions,
+							topLane,
+							seasonWins: snapshot?.seasonWins ?? 0,
+							seasonLosses: snapshot?.seasonLosses ?? 0,
 						},
 						error:null,
+						isOnline: p.isOnline || false,
+						activeGameStartTime: p.activeGameStartTime ? p.activeGameStartTime.toISOString() : null,
+						activeGameQueueId: p.activeGameQueueId ?? null,
 					};
 				})
 			);
@@ -140,7 +176,42 @@ export function createLeaderboardService({
 				return b.rank.leaguePoints - a.rank.leaguePoints;
 			});
 
-			const playersWithPosition = playerDtos.map((p, idx) => ({ ...p, position: idx + 1 }));
+			// Sort previous ranks to find previous positions
+			const prevSorted = [...playerDtos].sort((a, b) => {
+				const aRank = a.prevRank || { tier: 'UNRANKED', division: null, leaguePoints: 0 };
+				const bRank = b.prevRank || { tier: 'UNRANKED', division: null, leaguePoints: 0 };
+
+				const aTier = tierOrderIndex(aRank.tier);
+				const bTier = tierOrderIndex(bRank.tier);
+				if (aTier !== bTier) return aTier - bTier;
+
+				const aDiv = divisionIndex(aRank.division);
+				const bDiv = divisionIndex(bRank.division);
+				if (aDiv !== bDiv) return bDiv - aDiv;
+
+				return bRank.leaguePoints - aRank.leaguePoints;
+			});
+
+			const playersWithPosition = playerDtos.map((p, idx) => {
+				const currentPosition = idx + 1;
+				let positionChange = 0;
+				if (p.prevRank) {
+					const previousPosition = prevSorted.findIndex((x) => x.riotId === p.riotId) + 1;
+					positionChange = previousPosition - currentPosition;
+				}
+				return {
+					position: currentPosition,
+					positionChange,
+					riotId: p.riotId,
+					profileIconUrl: p.profileIconUrl,
+					rank: p.rank,
+					stats: p.stats,
+					error: p.error,
+					isOnline: p.isOnline,
+					activeGameStartTime: p.activeGameStartTime ?? null,
+					activeGameQueueId: p.activeGameQueueId ?? null,
+				};
+			});
 
 			const dto: LeaderboardDto = {
 				tournament: {

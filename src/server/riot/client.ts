@@ -48,13 +48,24 @@ export class RiotClient {
     return this.fetch(url);
   }
 
-  async getMatchIdsByPuuid(puuid: string, queue: number, count: number) {
-    const url = `https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?queue=${queue}&count=${count}`;
+  async getMatchIdsByPuuid(puuid: string, queue: number, count: number, startTime?: number, endTime?: number) {
+    let url = `https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?queue=${queue}&count=${count}`;
+    if (startTime !== undefined) {
+      url += `&startTime=${startTime}`;
+    }
+    if (endTime !== undefined) {
+      url += `&endTime=${endTime}`;
+    }
     return this.fetch(url);
   }
 
   async getMatch(matchId: string) {
     const url = `https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}`;
+    return this.fetch(url);
+  }
+
+  async getActiveGameByPuuid(puuid: string, platform: string) {
+    const url = `https://${platform}.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/${encodeURIComponent(puuid)}`;
     return this.fetch(url);
   }
 }

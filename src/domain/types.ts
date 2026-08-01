@@ -24,11 +24,19 @@ export type MatchFact = {
   playedAt: Date;
   queueId: number;
   championName: string;
-  win: boolean;
+  win: boolean | null;
   kills: number;
   deaths: number;
   assists: number;
   durationSeconds: number;
+};
+
+export type RecentMatchResult = {
+  result: 'W' | 'L' | 'R';
+  championName?: string;
+  kills?: number;
+  deaths?: number;
+  assists?: number;
 };
 
 export type TournamentStatistics = {
@@ -42,6 +50,9 @@ export type TournamentStatistics = {
   averageKills: number;
   averageDeaths: number;
   averageAssists: number;
-  recentResults: Array<'W' | 'L'>;
+  recentResults: Array<RecentMatchResult | 'W' | 'L'>;
   topChampions: Array<{ name: string; games: number }>;
-};
+  topLane: string | null;
+  seasonWins?: number;
+  seasonLosses?: number;
+};

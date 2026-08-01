@@ -8,6 +8,48 @@
       "when": 1785432657962,
       "tag": "0000_overrated_aaron_stack",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785451557609,
+      "tag": "0001_large_ricochet",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785454687369,
+      "tag": "0002_far_princess_powerful",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785470889398,
+      "tag": "0003_smooth_reptil",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785475280210,
+      "tag": "0004_equal_sabretooth",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785526575159,
+      "tag": "0005_mature_expediter",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785527528930,
+      "tag": "0006_famous_vampiro",
+      "breakpoints": true
     }
   ]
 }
