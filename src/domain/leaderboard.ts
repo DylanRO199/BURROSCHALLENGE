@@ -10,6 +10,7 @@ export type LeaderboardDto = {
   tournament: {
     name: string;
     startsAt: string | null;
+    endsAt: string | null;
   };
   refresh: {
     status: PublicRefreshStatus;

@@ -217,6 +217,7 @@ export function createLeaderboardService({
 				tournament: {
 					name: config.name,
 					startsAt: config.startsAt ?? null,
+					endsAt: config.endsAt ?? null,
 				},
 				refresh: {
 					status: refreshStatus,

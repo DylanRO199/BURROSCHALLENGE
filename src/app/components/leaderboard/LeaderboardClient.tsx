@@ -6,6 +6,7 @@ import { LeaderboardTable } from './LeaderboardTable';
 import { StatusBanner } from './StatusBanner';
 import { VisitorCounter } from '../VisitorCounter';
 import { LiveBadge } from './LiveBadge';
+import { Countdown } from './Countdown';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -347,6 +348,8 @@ export function LeaderboardClient({
         <p className="subtitle">
           Tabla de clasificación oficial. El invocador con más puntos dominará la Grieta.
         </p>
+
+        <Countdown endsAt={data.tournament.endsAt} />
 
         <div className="toolbar">
           <span className="last-update">Última actualización: {updatedAt}</span>
