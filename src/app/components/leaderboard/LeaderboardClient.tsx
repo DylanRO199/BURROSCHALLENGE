@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LeaderboardDto } from '@/domain/leaderboard';
 import { LeaderboardTable } from './LeaderboardTable';
+import { StatusBanner } from './StatusBanner';
 import { VisitorCounter } from '../VisitorCounter';
 import { LiveBadge } from './LiveBadge';
 
@@ -263,11 +264,13 @@ export function LeaderboardClient({
   const [data, setData] = useState(initialData);
   const [refreshing, setRefreshing] = useState(false);
   const autoRefreshStarted = useRef(false);
+  const [message, setMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'tierlist'>('leaderboard');
 
   const refresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
+    setMessage(null);
 
     setData((current) => ({
       ...current,
@@ -283,12 +286,14 @@ export function LeaderboardClient({
 
       const leaderboard = (await leaderboardResponse.json()) as LeaderboardDto;
       setData(leaderboard);
+      setMessage(null);
     } catch (error) {
-      console.error('ERROR durante la actualización silenciosa:', error);
+      console.error('ERROR durante la actualización:', error);
       setData((current) => ({
         ...current,
         refresh: { ...current.refresh, status: 'temporary_error' },
       }));
+      setMessage('Error al actualizar');
     } finally {
       setRefreshing(false);
     }
@@ -313,6 +318,10 @@ export function LeaderboardClient({
 
   return (
     <main className="lol-container">
+      <StatusBanner
+        status={data.refresh.status}
+        lastSuccessfulAt={data.refresh.lastSuccessfulAt}
+      />
 
       <header className="lol-header">
         <div className="eyebrow">✦ LEAGUE OF LEGENDS · LAS ✦</div>
@@ -345,8 +354,13 @@ export function LeaderboardClient({
             <a href="/estadisticas" className="lol-btn lol-btn-ghost" style={{ textDecoration: 'none' }}>
               📊 Estadísticas
             </a>
+            <button className="lol-btn" onClick={() => void refresh()} disabled={refreshing}>
+              {refreshing ? 'Actualizando...' : 'Actualizar ranking'}
+            </button>
           </div>
         </div>
+
+        {message && <p className="lol-error-msg">{message}</p>}
       </header>
 
       {data.players.length > 0 && (
