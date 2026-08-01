@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LeaderboardDto } from '@/domain/leaderboard';
 import { LeaderboardTable } from './LeaderboardTable';
-import { StatusBanner } from './StatusBanner';
 import { VisitorCounter } from '../VisitorCounter';
 import { LiveBadge } from './LiveBadge';
 
@@ -314,10 +313,6 @@ export function LeaderboardClient({
 
   return (
     <main className="lol-container">
-      <StatusBanner
-        status={data.refresh.status}
-        lastSuccessfulAt={data.refresh.lastSuccessfulAt}
-      />
 
       <header className="lol-header">
         <div className="eyebrow">✦ LEAGUE OF LEGENDS · LAS ✦</div>
