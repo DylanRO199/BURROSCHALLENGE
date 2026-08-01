@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const serverEnvSchema = z.object({
   DATABASE_URL: z.string().url(),
-  RIOT_API_KEY: z.string().min(20),
+  RIOT_API_KEY: z.string().min(20).transform((val) => val.replace(/^['"]|['"]$/g, '').trim()),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
