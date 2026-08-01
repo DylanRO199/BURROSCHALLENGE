@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq, gt, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, desc, asc, eq, gt, gte, lt, inArray, isNotNull, sql } from 'drizzle-orm';
 import { db } from './client';
 import { playerMatches, players, rankSnapshots, tournaments } from './schema';
 import type { MatchFact, Rank } from '@/domain/types';
@@ -206,5 +206,35 @@ export class DrizzleLeaderboardRepository {
       .from(playerMatches)
       .groupBy(playerMatches.championName)
       .orderBy(sql`count(*) desc`);
+  }
+
+  async getRankSnapshotsForDay(playerId: string, todayStart: Date) {
+    const snapshotsToday = await db
+      .select()
+      .from(rankSnapshots)
+      .where(
+        and(
+          eq(rankSnapshots.playerId, playerId),
+          gte(rankSnapshots.observedAt, todayStart)
+        )
+      )
+      .orderBy(asc(rankSnapshots.observedAt));
+
+    const beforeToday = await db
+      .select()
+      .from(rankSnapshots)
+      .where(
+        and(
+          eq(rankSnapshots.playerId, playerId),
+          lt(rankSnapshots.observedAt, todayStart)
+        )
+      )
+      .orderBy(desc(rankSnapshots.observedAt))
+      .limit(1);
+
+    return {
+      snapshotsToday,
+      lastSnapshotBeforeToday: beforeToday[0] || null,
+    };
   }
 }

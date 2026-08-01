@@ -30,6 +30,35 @@ function divisionIndex(div: string | null) {
 	return 0;
 }
 
+function getAbsoluteLp(tier: string, division: string | null, lp: number): number {
+	const tierOrder = [
+		'IRON',
+		'BRONZE',
+		'SILVER',
+		'GOLD',
+		'PLATINUM',
+		'EMERALD',
+		'DIAMOND',
+		'MASTER',
+		'GRANDMASTER',
+		'CHALLENGER'
+	];
+	const tierIndex = tierOrder.indexOf(tier.toUpperCase());
+	if (tierIndex === -1) return 0;
+
+	// MASTER, GRANDMASTER, CHALLENGER don't have divisions. They start at Master level
+	if (tierIndex >= tierOrder.indexOf('MASTER')) {
+		return 2800 + lp;
+	}
+
+	const divOrder = ['IV', 'III', 'II', 'I'];
+	const divIndex = division ? divOrder.indexOf(division.toUpperCase()) : 0;
+	const divisionOffset = divIndex !== -1 ? divIndex * 100 : 0;
+
+	return tierIndex * 400 + divisionOffset + lp;
+}
+
+
 export function createLeaderboardService({
 	repository,
 	config,
@@ -135,6 +164,31 @@ export function createLeaderboardService({
 					const profileIconId = snapshot?.profileIconId ?? p.profileIconId ?? null;
 					const profileIconUrl = profileIconId ? `https://ddragon.leagueoflegends.com/cdn/${iconVersion}/img/profileicon/${profileIconId}.png` : null;
 
+					// Calculate daily LP gains and losses from today's snapshots (America/Santiago timezone)
+					const todaySantiago = new Date(now().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+					todaySantiago.setHours(0, 0, 0, 0);
+
+					const daySnapshots = await repository.getRankSnapshotsForDay(p.id, todaySantiago);
+					const snapshotList = [];
+					if (daySnapshots.lastSnapshotBeforeToday) {
+						snapshotList.push(daySnapshots.lastSnapshotBeforeToday);
+					}
+					snapshotList.push(...daySnapshots.snapshotsToday);
+
+					let dailyGainedLp = 0;
+					let dailyLostLp = 0;
+
+					for (let i = 1; i < snapshotList.length; i++) {
+						const currentAbs = getAbsoluteLp(snapshotList[i].tier, snapshotList[i].division, snapshotList[i].leaguePoints);
+						const prevAbs = getAbsoluteLp(snapshotList[i - 1].tier, snapshotList[i - 1].division, snapshotList[i - 1].leaguePoints);
+						const diff = currentAbs - prevAbs;
+						if (diff > 0) {
+							dailyGainedLp += diff;
+						} else if (diff < 0) {
+							dailyLostLp += Math.abs(diff);
+						}
+					}
+
 					return {
 						riotId: p.riotId,
 						profileIconUrl,
@@ -156,6 +210,8 @@ export function createLeaderboardService({
 							topLane,
 							seasonWins: snapshot?.seasonWins ?? 0,
 							seasonLosses: snapshot?.seasonLosses ?? 0,
+							dailyGainedLp,
+							dailyLostLp,
 						},
 						error:null,
 						isOnline: p.isOnline || false,

@@ -55,4 +55,6 @@ export type TournamentStatistics = {
   topLane: string | null;
   seasonWins?: number;
   seasonLosses?: number;
+  dailyGainedLp?: number;
+  dailyLostLp?: number;
 };

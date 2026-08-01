@@ -1405,4 +1405,26 @@ tbody tr:hover { background: rgba(200, 170, 110, 0.06); }
   }
 }
 
+/* ─── Daily LP Styles ──────────────────────────────────────────────────────── */
+
+.daily-lp {
+  text-align: center;
+  font-family: var(--font-oOutfit, 'Outfit', 'Inter', sans-serif);
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lp-gain {
+  color: #00f5a0;
+  margin-right: 8px;
+  text-shadow: 0 0 10px rgba(0, 245, 160, 0.15);
+}
+
+.lp-loss {
+  color: #8893a6;
+  text-shadow: 0 0 10px rgba(136, 147, 166, 0.1);
+}
+
+
 

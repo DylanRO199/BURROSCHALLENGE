@@ -68,6 +68,7 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
             <th>Rol</th>
             <th>Rango</th>
             <th>LP</th>
+            <th>Diario</th>
             <th>V / D</th>
             <th>Win rate</th>
             <th>KDA</th>
@@ -156,6 +157,10 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
                   </div>
                 </td>
                 <td className="lp">{player.rank.leaguePoints}</td>
+                <td className="daily-lp">
+                  <span className="lp-gain">▲ {player.stats.dailyGainedLp ?? 0}</span>
+                  <span className="lp-loss">▼ {player.stats.dailyLostLp ?? 0}</span>
+                </td>
                 <td>
                   {player.stats.wins} / {player.stats.losses}
                 </td>
