@@ -18,7 +18,10 @@ export class RiotClient {
     this.apiKey = apiKey;
   }
 
-  private async fetch(url: string) {
+  private async fetch(url: string, attempt = 1): Promise<any> {
+    // Basic rate pacing: wait 50ms before any call to avoid blasting the API
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
     const response = await fetch(url, {
       headers: {
         'X-Riot-Token': this.apiKey,
@@ -26,6 +29,17 @@ export class RiotClient {
       },
       cache: 'no-store',
     });
+
+    if (response.status === 429) {
+      if (attempt <= 3) {
+        const retryAfterHeader = response.headers.get('Retry-After');
+        const delaySeconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : 2;
+        console.warn(`[Riot Rate Limit 429] URL: ${url}. Waiting ${delaySeconds}s before attempt ${attempt + 1}...`);
+        await new Promise((resolve) => setTimeout(resolve, (delaySeconds * 1000) + 200));
+        return this.fetch(url, attempt + 1);
+      }
+    }
+
     if (!response.ok) {
       throw new RiotApiError(`Riot API error: ${response.status}`, response.status);
     }
