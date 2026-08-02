@@ -91,9 +91,10 @@ export function createLeaderboardService({
 					const snapshot = snapshots[0] || null;
 					const prevSnapshot = snapshots[1] || null;
 
-					const matches = await repository.getMatches(p.id, 20);
+					const matchesForStats = await repository.getMatches(p.id, 1000);
+					const matchesForRecent = matchesForStats.slice(0, 20);
 
-					const recentResults = matches.map((m: any) => ({
+					const recentResults = matchesForRecent.map((m: any) => ({
 						result: (m.win === null ? 'R' : m.win ? 'W' : 'L') as 'W' | 'L' | 'R',
 						championName: m.championName,
 						kills: m.kills ?? 0,
@@ -101,7 +102,7 @@ export function createLeaderboardService({
 						assists: m.assists ?? 0,
 					}));
 
-					const validMatches = matches.filter((m: any) => m.win !== null);
+					const validMatches = matchesForStats.filter((m: any) => m.win !== null);
 					const games = validMatches.length;
 					const wins = validMatches.filter((m: any) => m.win).length;
 					const losses = games - wins;
@@ -115,7 +116,7 @@ export function createLeaderboardService({
 					// streak calculation
 					let streak = 0;
 					let streakType: 'W' | 'L' | null = null;
-					for (const m of matches) {
+					for (const m of matchesForStats) {
 						if (m.win === null) continue; // Skip remakes
 						const result = m.win ? 'W' : 'L';
 						if (streakType === null) {
@@ -127,7 +128,7 @@ export function createLeaderboardService({
 					}
 
 					const topChampionsMap: Record<string, number> = {};
-					for (const m of matches) {
+					for (const m of matchesForStats) {
 						topChampionsMap[m.championName] = (topChampionsMap[m.championName] || 0) + 1;
 					}
 					const topChampions = Object.entries(topChampionsMap)
@@ -137,7 +138,7 @@ export function createLeaderboardService({
 
 					// Most played lane
 					const laneMap: Record<string, number> = {};
-					for (const m of matches) {
+					for (const m of matchesForStats) {
 						const l = (m as any).lane;
 						if (l && l !== '' && l !== 'Invalid') laneMap[l] = (laneMap[l] || 0) + 1;
 					}

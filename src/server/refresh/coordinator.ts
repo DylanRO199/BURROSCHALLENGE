@@ -190,9 +190,9 @@ export function createRefreshCoordinator({
           // 6. Obtener partidas recientes dentro de la duración del torneo
           const startSec = startsAt ? Math.floor(startsAt.getTime() / 1000) : undefined;
           const endSec = endsAt ? Math.floor(endsAt.getTime() / 1000) : undefined;
-          const matchIds: string[] = await riot.getMatchIdsByPuuid(puuid, 420, 30, startSec, endSec);
+          const matchIds: string[] = await riot.getMatchIdsByPuuid(puuid, 420, 100, startSec, endSec);
           
-          const existingMatches = await repository.getMatches(playerId, 100);
+          const existingMatches = await repository.getMatches(playerId, 1000);
           const existingMatchIds = new Set(existingMatches.map((m) => m.matchId));
           const newMatchIds = matchIds.filter((id) => !existingMatchIds.has(id));
 
