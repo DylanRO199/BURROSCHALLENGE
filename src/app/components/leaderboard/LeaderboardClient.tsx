@@ -337,8 +337,14 @@ export function LeaderboardClient({
     }
   }, [refreshing]);
 
-  // Fast DB read: silently poll the leaderboard DB every 5 seconds to catch any
-  // changes made by the Riot API refresh background rotations.
+  // ─── Polling Architecture ────────────────────────────────────────────────────
+  // 4 independent loops with different frequencies:
+  //  1. 5s  – DB read (instant UI refresh from cached DB data)
+  //  2. 15s – Spectator ping (all players live-game status from Riot)
+  //  3. 30s – Rank LP ping (all players LP/tier/W/L from Riot, fast)
+  //  4. 90s – Full refresh (3 players rotary: match history + all of the above)
+
+  // 1. Fast DB read — no Riot API calls, just reads latest state from DB
   const pollRef = useRef(false);
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -350,17 +356,14 @@ export function LeaderboardClient({
           const leaderboard = (await res.json()) as LeaderboardDto;
           setData(leaderboard);
         }
-      } catch {
-        // silent fail — do not show error for background polls
-      } finally {
+      } catch { /* silent */ } finally {
         pollRef.current = false;
       }
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Spectator ping: every 10 seconds, check live-game status for ALL players
-  // then immediately re-read the DB so badges update within seconds.
+  // 2. Spectator ping — checks live-game status for ALL players every 15s
   const spectatorRef = useRef(false);
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -368,26 +371,43 @@ export function LeaderboardClient({
       spectatorRef.current = true;
       try {
         await fetch('/api/leaderboard/spectator', { method: 'POST' });
-        // After updating spectator status in DB, pull fresh leaderboard immediately
         const res = await fetch('/api/leaderboard', { cache: 'no-store' });
         if (res.ok) {
           const leaderboard = (await res.json()) as LeaderboardDto;
           setData(leaderboard);
         }
-      } catch {
-        // silent fail
-      } finally {
+      } catch { /* silent */ } finally {
         spectatorRef.current = false;
       }
-    }, 10000);
+    }, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  // Riot API refresh: trigger a backend update (2-3 players from Riot) every 20 seconds
+  // 3. Rank LP ping — updates LP/tier/W/L for ALL players every 30s (fast, no match history)
+  const rankRef = useRef(false);
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (rankRef.current) return;
+      rankRef.current = true;
+      try {
+        await fetch('/api/leaderboard/rank', { method: 'POST' });
+        const res = await fetch('/api/leaderboard', { cache: 'no-store' });
+        if (res.ok) {
+          const leaderboard = (await res.json()) as LeaderboardDto;
+          setData(leaderboard);
+        }
+      } catch { /* silent */ } finally {
+        rankRef.current = false;
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // 4. Full refresh — updates match history for 3 players (rotary) every 90s
   useEffect(() => {
     const interval = setInterval(() => {
       void refresh();
-    }, 20000);
+    }, 90000);
     return () => clearInterval(interval);
   }, [refresh]);
 
