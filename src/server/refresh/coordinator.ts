@@ -103,10 +103,15 @@ export function createRefreshCoordinator({
             }
           }
         }
+        
+        // Obtener jugadores activos ordenados por los que llevan más tiempo sin refrescarse
+        const sortedPlayers = await repository.getPlayersSortedByLastRefreshed();
+        
+        // Seleccionamos los 2 jugadores más antiguos
+        const playersToRefresh = sortedPlayers.slice(0, 2);
+        console.log(`Seleccionados para refresco en este ciclo: ${playersToRefresh.map(p => p.riotId).join(', ')}`);
 
-        const dbPlayers = await repository.getPlayers();
-
-        for (const playerConfig of dbPlayers) {
+        for (const playerConfig of playersToRefresh) {
           try {
             const { gameName, tagLine } = parseRiotId(playerConfig.riotId);
 
@@ -259,6 +264,9 @@ export function createRefreshCoordinator({
             }
           } catch (playerErr) {
             console.error(`❌ Error procesando jugador ${playerConfig.riotId}:`, playerErr);
+          } finally {
+            // Se actualiza lastRefreshedAt de forma incondicional para rotar la cola
+            await repository.updatePlayerLastRefreshed(playerConfig.id, now());
           }
         }
 

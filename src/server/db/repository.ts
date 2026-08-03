@@ -48,6 +48,14 @@ export class DrizzleLeaderboardRepository {
     return db.select().from(players).where(eq(players.active, true));
   }
 
+  async getPlayersSortedByLastRefreshed() {
+    return db
+      .select()
+      .from(players)
+      .where(eq(players.active, true))
+      .orderBy(asc(players.lastRefreshedAt));
+  }
+
   async getPlayerByRiotId(riotId: string) {
     const result = await db.select().from(players).where(eq(players.riotId, riotId)).limit(1);
     return result[0] || null;
@@ -69,6 +77,7 @@ export class DrizzleLeaderboardRepository {
     summonerId: string;
     accountCluster: string;
     profileIconId: number;
+    lastRefreshedAt?: Date;
   }): Promise<string> {
     const existing = await this.getPlayerByRiotId(player.riotId);
     if (existing) {
@@ -83,6 +92,7 @@ export class DrizzleLeaderboardRepository {
           profileIconId: player.profileIconId,
           active: true,
           errorCategory: null,
+          ...(player.lastRefreshedAt ? { lastRefreshedAt: player.lastRefreshedAt } : {}),
         })
         .where(eq(players.id, existing.id));
       return existing.id;
@@ -99,6 +109,7 @@ export class DrizzleLeaderboardRepository {
           accountCluster: player.accountCluster,
           profileIconId: player.profileIconId,
           active: true,
+          ...(player.lastRefreshedAt ? { lastRefreshedAt: player.lastRefreshedAt } : {}),
         })
         .returning({ id: players.id });
       return result[0].id;
@@ -118,6 +129,13 @@ export class DrizzleLeaderboardRepository {
         activeGameStartTime: activeGameStartTime ?? null,
         activeGameQueueId: activeGameQueueId ?? null,
       })
+      .where(eq(players.id, playerId));
+  }
+
+  async updatePlayerLastRefreshed(playerId: string, observedAt: Date) {
+    await db
+      .update(players)
+      .set({ lastRefreshedAt: observedAt })
       .where(eq(players.id, playerId));
   }
 
