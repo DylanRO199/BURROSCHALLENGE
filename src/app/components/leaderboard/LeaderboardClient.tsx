@@ -337,12 +337,33 @@ export function LeaderboardClient({
     }
   }, [refreshing]);
 
-  // Real-time auto sync: silently run refresh() every 15 seconds
+  // Fast DB read: silently poll the leaderboard DB every 5 seconds to catch any
+  // changes made by the Riot API refresh background rotations.
+  const pollRef = useRef(false);
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (pollRef.current) return;
+      pollRef.current = true;
+      try {
+        const res = await fetch('/api/leaderboard', { cache: 'no-store' });
+        if (res.ok) {
+          const leaderboard = (await res.json()) as LeaderboardDto;
+          setData(leaderboard);
+        }
+      } catch {
+        // silent fail — do not show error for background polls
+      } finally {
+        pollRef.current = false;
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Riot API refresh: trigger a backend update (2-3 players from Riot) every 20 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       void refresh();
-    }, 15000);
-
+    }, 20000);
     return () => clearInterval(interval);
   }, [refresh]);
 

@@ -107,8 +107,8 @@ export function createRefreshCoordinator({
         // Obtener jugadores activos ordenados por los que llevan más tiempo sin refrescarse
         const sortedPlayers = await repository.getPlayersSortedByLastRefreshed();
         
-        // Seleccionamos los 2 jugadores más antiguos
-        const playersToRefresh = sortedPlayers.slice(0, 2);
+        // Seleccionamos los 3 jugadores más antiguos
+        const playersToRefresh = sortedPlayers.slice(0, 3);
         console.log(`Seleccionados para refresco en este ciclo: ${playersToRefresh.map(p => p.riotId).join(', ')}`);
 
         for (const playerConfig of playersToRefresh) {
