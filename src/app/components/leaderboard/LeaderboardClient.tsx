@@ -359,6 +359,30 @@ export function LeaderboardClient({
     return () => clearInterval(interval);
   }, []);
 
+  // Spectator ping: every 10 seconds, check live-game status for ALL players
+  // then immediately re-read the DB so badges update within seconds.
+  const spectatorRef = useRef(false);
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (spectatorRef.current) return;
+      spectatorRef.current = true;
+      try {
+        await fetch('/api/leaderboard/spectator', { method: 'POST' });
+        // After updating spectator status in DB, pull fresh leaderboard immediately
+        const res = await fetch('/api/leaderboard', { cache: 'no-store' });
+        if (res.ok) {
+          const leaderboard = (await res.json()) as LeaderboardDto;
+          setData(leaderboard);
+        }
+      } catch {
+        // silent fail
+      } finally {
+        spectatorRef.current = false;
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Riot API refresh: trigger a backend update (2-3 players from Riot) every 20 seconds
   useEffect(() => {
     const interval = setInterval(() => {
