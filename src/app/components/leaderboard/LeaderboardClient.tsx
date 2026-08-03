@@ -264,9 +264,46 @@ export function LeaderboardClient({
 }) {
   const [data, setData] = useState(initialData);
   const [refreshing, setRefreshing] = useState(false);
-  const autoRefreshStarted = useRef(false);
+  const [positionChanges, setPositionChanges] = useState<Record<string, 'up' | 'down' | null>>({});
   const [message, setMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'tierlist'>('leaderboard');
+  
+  const prevPlayersRef = useRef<LeaderboardDto['players']>(initialData.players);
+
+  // Monitor position changes when data updates
+  useEffect(() => {
+    const prevPlayers = prevPlayersRef.current;
+    if (!prevPlayers) {
+      prevPlayersRef.current = data.players;
+      return;
+    }
+
+    const changes: Record<string, 'up' | 'down'> = {};
+    let hasChanges = false;
+
+    for (const p of data.players) {
+      const prevP = prevPlayers.find((x) => x.riotId === p.riotId);
+      if (prevP) {
+        if (p.position < prevP.position) {
+          changes[p.riotId] = 'up';
+          hasChanges = true;
+        } else if (p.position > prevP.position) {
+          changes[p.riotId] = 'down';
+          hasChanges = true;
+        }
+      }
+    }
+
+    if (hasChanges) {
+      setPositionChanges(changes);
+      const timer = setTimeout(() => {
+        setPositionChanges({});
+      }, 5000); // Keep visual animation for 5 seconds
+      return () => clearTimeout(timer);
+    }
+
+    prevPlayersRef.current = data.players;
+  }, [data.players]);
 
   const refresh = useCallback(async () => {
     if (refreshing) return;
@@ -300,11 +337,11 @@ export function LeaderboardClient({
     }
   }, [refreshing]);
 
-  // Real-time auto sync: silently run refresh() every 60 seconds
+  // Real-time auto sync: silently run refresh() every 15 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       void refresh();
-    }, 60000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [refresh]);
@@ -374,6 +411,13 @@ export function LeaderboardClient({
               const rWins = player.stats.wins;
               const rLosses = player.stats.losses;
 
+              let animClass = '';
+              if (positionChanges[player.riotId] === 'up') {
+                animClass = 'animate-rank-up';
+              } else if (positionChanges[player.riotId] === 'down') {
+                animClass = 'animate-rank-down';
+              }
+
               let podiumCls = '';
               let badgeIcon = '';
               if (player.position === 1) { podiumCls = 'first-place'; badgeIcon = '👑'; }
@@ -381,7 +425,7 @@ export function LeaderboardClient({
               else if (player.position === 3) { podiumCls = 'third-place'; badgeIcon = '🥉'; }
 
               return (
-                <div key={player.riotId} className={`podium-card ${podiumCls}`}>
+                <div key={player.riotId} className={`podium-card ${podiumCls} ${animClass}`}>
                   <div className="podium-card-header">
                     <span className="podium-badge">{badgeIcon}</span>
                     <div className="podium-player-info">
