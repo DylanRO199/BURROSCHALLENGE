@@ -49,11 +49,13 @@ export class DrizzleLeaderboardRepository {
   }
 
   async getPlayersSortedByLastRefreshed() {
+    // NULLS FIRST ensures players who have never been refreshed are always
+    // picked before players who were recently refreshed.
     return db
       .select()
       .from(players)
       .where(eq(players.active, true))
-      .orderBy(asc(players.lastRefreshedAt));
+      .orderBy(sql`${players.lastRefreshedAt} ASC NULLS FIRST`);
   }
 
   async getPlayerByRiotId(riotId: string) {
