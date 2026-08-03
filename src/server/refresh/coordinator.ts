@@ -132,19 +132,11 @@ export function createRefreshCoordinator({
               continue;
             }
 
-            // 2. Obtener summoner (sólo si no lo tenemos en DB)
-            let profileIconId = playerConfig.profileIconId ?? 0;
-            let summonerId = playerConfig.summonerId ?? '';
-            if (!summonerId || profileIconId === 0) {
-              try {
-                console.log(`Summoner info no encontrada en DB para ${playerConfig.riotId}, obteniendo de Riot...`);
-                const summoner = await riot.getSummonerByPuuid(puuid, playerConfig.platform);
-                profileIconId = summoner.profileIconId ?? 0;
-                summonerId = summoner.id ?? '';
-              } catch (err) {
-                console.error(`Error al obtener summoner para ${playerConfig.riotId}:`, err);
-              }
-            }
+            // 2. Profile icon — skip getSummonerByPuuid (deprecated endpoint, not needed
+            // for league entries which now use PUUID directly). Default icon to 0 or keep
+            // existing value from DB to avoid an extra rate-limited API call.
+            const profileIconId = playerConfig.profileIconId ?? 0;
+            const summonerId = playerConfig.summonerId ?? '';
 
             // 3. Obtener ligas
             const leagues = await riot.getLeagueEntriesByPuuid(puuid, playerConfig.platform);
