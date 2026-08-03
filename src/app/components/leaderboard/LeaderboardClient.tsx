@@ -338,11 +338,12 @@ export function LeaderboardClient({
   }, [refreshing]);
 
   // ─── Polling Architecture ────────────────────────────────────────────────────
-  // 4 independent loops with different frequencies:
-  //  1. 5s  – DB read (instant UI refresh from cached DB data)
-  //  2. 15s – Spectator ping (all players live-game status from Riot)
-  //  3. 30s – Rank LP ping (all players LP/tier/W/L from Riot, fast)
-  //  4. 90s – Full refresh (3 players rotary: match history + all of the above)
+  // 4 independent loops, balanced to avoid exceeding Neon free tier quota.
+  // Server-side 10s cache on /api/leaderboard means most polls hit cache, not DB.
+  //  1. 30s  – DB read (hits server cache most of the time)
+  //  2. 30s  – Spectator ping (live-game status for ALL players from Riot)
+  //  3. 60s  – Rank LP ping (LP/tier/W/L from Riot for ALL players)
+  //  4. 120s – Full refresh (match history, 3 players rotary)
 
   // 1. Fast DB read — no Riot API calls, just reads latest state from DB
   const pollRef = useRef(false);
@@ -359,7 +360,7 @@ export function LeaderboardClient({
       } catch { /* silent */ } finally {
         pollRef.current = false;
       }
-    }, 5000);
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -379,7 +380,7 @@ export function LeaderboardClient({
       } catch { /* silent */ } finally {
         spectatorRef.current = false;
       }
-    }, 15000);
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -399,7 +400,7 @@ export function LeaderboardClient({
       } catch { /* silent */ } finally {
         rankRef.current = false;
       }
-    }, 30000);
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -407,7 +408,7 @@ export function LeaderboardClient({
   useEffect(() => {
     const interval = setInterval(() => {
       void refresh();
-    }, 90000);
+    }, 120000);
     return () => clearInterval(interval);
   }, [refresh]);
 
