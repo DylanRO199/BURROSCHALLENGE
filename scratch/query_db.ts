@@ -10,13 +10,9 @@ async function main() {
   await client.connect();
 
   const res = await client.query(
-    `SELECT pm.match_id, pm.duration_seconds, pm.win, pm.champion_name, pm.played_at, p.riot_id 
-     FROM player_matches pm
-     JOIN players p ON pm.player_id = p.id
-     ORDER BY pm.played_at DESC 
-     LIMIT 20`
+    `SELECT id, riot_id, summoner_id, profile_icon_id, active FROM players`
   );
-  console.log('--- RECENT MATCHES IN DB ---');
+  console.log('--- PLAYERS IN DB ---');
   console.log(JSON.stringify(res.rows, null, 2));
 
   await client.end();
