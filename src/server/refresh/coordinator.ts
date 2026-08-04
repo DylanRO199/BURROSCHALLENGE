@@ -132,11 +132,20 @@ export function createRefreshCoordinator({
               continue;
             }
 
-            // 2. Profile icon — skip getSummonerByPuuid (deprecated endpoint, not needed
-            // for league entries which now use PUUID directly). Default icon to 0 or keep
-            // existing value from DB to avoid an extra rate-limited API call.
-            const profileIconId = playerConfig.profileIconId ?? 0;
-            const summonerId = playerConfig.summonerId ?? '';
+            // 2. Profile icon & Summoner ID — fetch from Riot only if missing or if the current
+            // icon is a default one (0 or the standard minion icon 29) to avoid rate limits.
+            let profileIconId = playerConfig.profileIconId ?? 0;
+            let summonerId = playerConfig.summonerId ?? '';
+            if (!summonerId || profileIconId <= 29) {
+              try {
+                console.log(`Summoner info/icono no encontrado o por defecto para ${playerConfig.riotId}, obteniendo de Riot...`);
+                const summoner = await riot.getSummonerByPuuid(puuid, playerConfig.platform);
+                profileIconId = summoner.profileIconId ?? profileIconId;
+                summonerId = summoner.id ?? summonerId;
+              } catch (err) {
+                console.error(`Error al obtener summoner/icono para ${playerConfig.riotId}:`, err);
+              }
+            }
 
             // 3. Obtener ligas
             const leagues = await riot.getLeagueEntriesByPuuid(puuid, playerConfig.platform);
