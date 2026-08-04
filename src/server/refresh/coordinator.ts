@@ -195,65 +195,16 @@ export function createRefreshCoordinator({
             }
 
             // 6. Obtener partidas recientes dentro de la duración del torneo
-            const startSec = startsAt ? Math.floor(startsAt.getTime() / 1000) : undefined;
-            const endSec = endsAt ? Math.floor(endsAt.getTime() / 1000) : undefined;
-            const matchIds: string[] = await riot.getMatchIdsByPuuid(puuid, 420, 100, startSec, endSec);
-            
-            const existingMatches = await repository.getMatches(playerId, 1000);
-            const existingMatchIds = new Set(existingMatches.map((m) => m.matchId));
-            const newMatchIds = matchIds.filter((id) => !existingMatchIds.has(id));
-
-            const matches = [];
-            if (newMatchIds.length > 0) {
-              console.log(`Obteniendo ${newMatchIds.length} partidas nuevas para ${playerConfig.riotId}...`);
-              const matchDataList = [];
-              for (const matchId of newMatchIds) {
-                try {
-                  const data = await riot.getMatch(matchId);
-                  matchDataList.push({ matchId, matchData: data });
-                  // Delays 60ms to avoid 20req/sec burst limits
-                  await new Promise((resolve) => setTimeout(resolve, 60));
-                } catch (err) {
-                  if (err instanceof RiotApiError && err.status === 429) {
-                    console.warn("⚠️ Rate limit 429 alcanzado. Esperando 2 segundos...");
-                    await new Promise((resolve) => setTimeout(resolve, 2000));
-                    try {
-                      const data = await riot.getMatch(matchId);
-                      matchDataList.push({ matchId, matchData: data });
-                    } catch (retryErr) {
-                      console.error(`Reintento fallido para partida ${matchId}:`, retryErr);
-                    }
-                  } else {
-                    console.error(`Error al obtener partida ${matchId}:`, err);
-                  }
-                }
-              }
-
-              for (let index = 0; index < matchDataList.length; index += 1) {
-                const { matchId, matchData } = matchDataList[index];
-                const participant = matchData.info.participants.find(
-                  (p: any) => p.puuid === puuid
-                );
-                if (participant) {
-                  const isRemake =
-                    (participant.gameEndedInEarlySurrender === true || participant.gameEndedInVoid === true) &&
-                    matchData.info.gameDuration < 240;
-                  matches.push({
-                    matchId,
-                    playedAt: new Date(matchData.info.gameCreation),
-                    queueId: matchData.info.queueId,
-                    championName: participant.championName,
-                    lane: participant.teamPosition || participant.individualPosition || null,
-                    win: isRemake ? null : participant.win,
-                    kills: participant.kills,
-                    deaths: participant.deaths,
-                    assists: participant.assists,
-                    durationSeconds: matchData.info.gameDuration,
-                  });
-                }
-              }
-              await repository.saveMatches(playerId, matches);
-            }
+            await refreshPlayerMatchesOnly({
+              playerId,
+              riotId: playerConfig.riotId,
+              puuid,
+              platform: playerConfig.platform,
+              startsAt,
+              endsAt,
+              repository,
+              riot,
+            });
           } catch (playerErr) {
             console.error(`❌ Error procesando jugador ${playerConfig.riotId}:`, playerErr);
           } finally {
@@ -280,4 +231,84 @@ export function createRefreshCoordinator({
       }
     },
   };
+}
+
+export async function refreshPlayerMatchesOnly({
+  playerId,
+  riotId,
+  puuid,
+  platform,
+  startsAt,
+  endsAt,
+  repository,
+  riot,
+}: {
+  playerId: string;
+  riotId: string;
+  puuid: string;
+  platform: string;
+  startsAt: Date | null;
+  endsAt: Date | null;
+  repository: DrizzleLeaderboardRepository;
+  riot: RiotClient;
+}) {
+  const startSec = startsAt ? Math.floor(startsAt.getTime() / 1000) : undefined;
+  const endSec = endsAt ? Math.floor(endsAt.getTime() / 1000) : undefined;
+  const matchIds: string[] = await riot.getMatchIdsByPuuid(puuid, 420, 100, startSec, endSec);
+  
+  const existingMatches = await repository.getMatches(playerId, 1000);
+  const existingMatchIds = new Set(existingMatches.map((m) => m.matchId));
+  const newMatchIds = matchIds.filter((id) => !existingMatchIds.has(id));
+
+  const matches = [];
+  if (newMatchIds.length > 0) {
+    console.log(`Obteniendo ${newMatchIds.length} partidas nuevas para ${riotId}...`);
+    const matchDataList = [];
+    for (const matchId of newMatchIds) {
+      try {
+        const data = await riot.getMatch(matchId);
+        matchDataList.push({ matchId, matchData: data });
+        // Delays 60ms to avoid 20req/sec burst limits
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      } catch (err) {
+        if (err instanceof RiotApiError && err.status === 429) {
+          console.warn("⚠️ Rate limit 429 alcanzado. Esperando 2 segundos...");
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          try {
+            const data = await riot.getMatch(matchId);
+            matchDataList.push({ matchId, matchData: data });
+          } catch (retryErr) {
+            console.error(`Reintento fallido para partida ${matchId}:`, retryErr);
+          }
+        } else {
+          console.error(`Error al obtener partida ${matchId}:`, err);
+        }
+      }
+    }
+
+    for (let index = 0; index < matchDataList.length; index += 1) {
+      const { matchId, matchData } = matchDataList[index];
+      const participant = matchData.info.participants.find(
+        (p: any) => p.puuid === puuid
+      );
+      if (participant) {
+        const isRemake =
+          (participant.gameEndedInEarlySurrender === true || participant.gameEndedInVoid === true) &&
+          matchData.info.gameDuration < 240;
+        matches.push({
+          matchId,
+          playedAt: new Date(matchData.info.gameCreation),
+          queueId: matchData.info.queueId,
+          championName: participant.championName,
+          lane: participant.teamPosition || participant.individualPosition || null,
+          win: isRemake ? null : participant.win,
+          kills: participant.kills,
+          deaths: participant.deaths,
+          assists: participant.assists,
+          durationSeconds: matchData.info.gameDuration,
+        });
+      }
+    }
+    await repository.saveMatches(playerId, matches);
+  }
 }

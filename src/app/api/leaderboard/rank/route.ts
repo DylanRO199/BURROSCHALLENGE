@@ -3,6 +3,8 @@ import { DrizzleLeaderboardRepository } from '@/server/db/repository';
 import { readServerEnv } from '@/server/env';
 import { RiotClient } from '@/server/riot/client';
 import { NextResponse } from 'next/server';
+import { loadConfig } from '@/server/config';
+import { refreshPlayerMatchesOnly } from '@/server/refresh/coordinator';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,13 +12,16 @@ export const dynamic = 'force-dynamic';
 /**
  * Lightweight rank-only endpoint.
  * Updates LP, W/L and tier for ALL active players in parallel batches.
- * Does NOT fetch match history — designed to complete in ~4-6s.
- * Call this every 30 seconds to keep LP current for everyone.
+ * Does NOT fetch match history for everyone — but triggers match history refresh
+ * immediately and exclusively for players whose LP just changed.
  */
 export async function POST() {
   try {
     const repository = new DrizzleLeaderboardRepository();
     const riot = new RiotClient({ apiKey: readServerEnv().RIOT_API_KEY });
+    const config = loadConfig();
+    const startsAt = config.tournament.startsAt ? new Date(config.tournament.startsAt) : null;
+    const endsAt = config.tournament.endsAt ? new Date(config.tournament.endsAt) : null;
 
     const players = await repository.getPlayers();
     const now = new Date();
@@ -58,7 +63,23 @@ export async function POST() {
                   profileIconId: player.profileIconId ?? 0,
                 });
                 updates.push(`${player.riotId}: ${soloQ.tier} ${soloQ.rank} ${soloQ.leaguePoints}LP (W:${soloQ.wins} L:${soloQ.losses})`);
-                console.log(`📊 LP changed for ${player.riotId}: ${soloQ.leaguePoints}LP`);
+                console.log(`📊 LP changed for ${player.riotId}: ${soloQ.leaguePoints}LP. Triggering priority match history refresh.`);
+
+                // Immediately trigger match history update for this player since we know they played a game
+                try {
+                  await refreshPlayerMatchesOnly({
+                    playerId: player.id,
+                    riotId: player.riotId,
+                    puuid: player.puuid,
+                    platform: player.platform,
+                    startsAt,
+                    endsAt,
+                    repository,
+                    riot,
+                  });
+                } catch (matchErr) {
+                  console.error(`⚠️ Failed to update matches on-demand for ${player.riotId}:`, matchErr);
+                }
               }
             }
           } catch (err: any) {
