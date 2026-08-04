@@ -5,9 +5,11 @@ import { RiotClient } from '@/server/riot/client';
 import { NextResponse } from 'next/server';
 import { loadConfig } from '@/server/config';
 import { refreshPlayerMatchesOnly } from '@/server/refresh/coordinator';
+import { invalidateLeaderboardCache } from '@/server/runtime';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
 
 /**
  * Lightweight rank-only endpoint.
@@ -96,6 +98,12 @@ export async function POST() {
         await new Promise((r) => setTimeout(r, 200));
       }
     }
+
+    const online = updates.length > 0;
+    if (online) {
+      // Import invalidation dynamically or use imported one. We already imported it from '@/server/runtime' at the top of the file!
+    }
+    invalidateLeaderboardCache();
 
     console.log(`✅ Rank ping: ${updates.length} players changed LP: ${updates.join(', ') || 'none'}`);
     return NextResponse.json({ success: true, changed: updates.length, updates });

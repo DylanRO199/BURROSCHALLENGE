@@ -5,6 +5,6 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export default async function HomePage() {
-  const initialData = await getLeaderboard();
-  return <LeaderboardClient initialData={initialData} />;
+  const { data } = await getLeaderboard();
+  return <LeaderboardClient initialData={data} />;
 }

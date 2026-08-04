@@ -7,7 +7,23 @@ import { createRefreshCoordinator } from '@/server/refresh/coordinator';
 import { getDataDragonVersion } from '@/server/riot/assets';
 import { RiotClient } from '@/server/riot/client';
 
-export async function getLeaderboard() {
+// ─── Shared Server-side Cache ────────────────────────────────────────────────
+let cachedData: any = null;
+let cacheExpiry = 0;
+const CACHE_TTL_MS = 10_000; // 10 seconds
+
+export function invalidateLeaderboardCache() {
+  cachedData = null;
+  cacheExpiry = 0;
+  console.log('🧹 Leaderboard cache invalidated.');
+}
+
+export async function getLeaderboard(forceRefresh = false) {
+  const nowTime = Date.now();
+  if (!forceRefresh && cachedData && nowTime < cacheExpiry) {
+    return { data: cachedData, fromCache: true };
+  }
+
   const config = loadConfig();
   const repository = new DrizzleLeaderboardRepository();
   await repository.ensureTournament({
@@ -18,13 +34,20 @@ export async function getLeaderboard() {
     timezone: config.tournament.timezone,
     refreshTtlSeconds: config.tournament.refreshTtlSeconds,
   });
-  return createLeaderboardService({
+  
+  const freshData = await createLeaderboardService({
     repository,
     config: config.tournament,
     now: () => new Date(),
     getIconVersion: () => getDataDragonVersion(),
   }).getLeaderboard();
+
+  cachedData = freshData;
+  cacheExpiry = nowTime + CACHE_TTL_MS;
+
+  return { data: freshData, fromCache: false };
 }
+
 
 export async function runRefresh() {
   const config = loadConfig();

@@ -5,12 +5,12 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export default async function EstadisticasPage() {
-  const leaderboard = await getLeaderboard();
+  const { data } = await getLeaderboard();
   const champions = await getChampionStats();
 
   return (
     <StatsClient
-      leaderboard={leaderboard}
+      leaderboard={data}
       champions={champions as any[]}
     />
   );

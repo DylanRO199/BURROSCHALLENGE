@@ -3,6 +3,7 @@ import { DrizzleLeaderboardRepository } from '@/server/db/repository';
 import { readServerEnv } from '@/server/env';
 import { RiotClient } from '@/server/riot/client';
 import { NextResponse } from 'next/server';
+import { invalidateLeaderboardCache } from '@/server/runtime';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -62,9 +63,13 @@ export async function POST() {
     const online = updates.filter((u) => u.isOnline).map((u) => u.riotId);
     console.log(`✅ Spectator ping: ${online.length} jugadores EN VIVO: [${online.join(', ')}]`);
 
+    // Invalidate main leaderboard cache immediately so the next GET shows the online/offline updates
+    invalidateLeaderboardCache();
+
     return NextResponse.json({ success: true, online });
   } catch (error) {
     console.error('POST /api/leaderboard/spectator failed:', error);
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }
+

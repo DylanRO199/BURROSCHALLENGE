@@ -1,4 +1,4 @@
-import { runRefresh } from '@/server/runtime';
+import { runRefresh, invalidateLeaderboardCache } from '@/server/runtime';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -7,7 +7,9 @@ export const dynamic = 'force-dynamic';
 export async function POST() {
   try {
     const result = await runRefresh();
+    invalidateLeaderboardCache();
     return NextResponse.json({ success: true, result });
+
   } catch (error: any) {
     const rawKey = process.env.RIOT_API_KEY || '';
     console.error('POST /api/leaderboard/refresh failed:', error);
