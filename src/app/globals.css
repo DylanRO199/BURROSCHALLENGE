@@ -496,6 +496,22 @@ tbody tr:hover { background: rgba(200, 170, 110, 0.06); }
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
 }
 
+.podium-rank-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.podium-rank-name {
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gold-primary);
+  text-shadow: 0 0 8px rgba(200, 170, 110, 0.3);
+}
+
 .podium-lp-display {
   display: flex;
   align-items: baseline;

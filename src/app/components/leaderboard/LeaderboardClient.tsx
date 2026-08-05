@@ -52,6 +52,29 @@ function saveTierState(state: TierState) {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+const tierNames: Record<string, string> = {
+  CHALLENGER: 'Challenger',
+  GRANDMASTER: 'Grandmaster',
+  MASTER: 'Master',
+  DIAMOND: 'Diamante',
+  EMERALD: 'Esmeralda',
+  PLATINUM: 'Platino',
+  GOLD: 'Oro',
+  SILVER: 'Plata',
+  BRONZE: 'Bronce',
+  IRON: 'Hierro',
+  UNRANKED: 'Sin clasificar',
+};
+
+function formatRank(rank: { tier: string; division: string | null }) {
+  const tier = rank.tier.toUpperCase();
+  const name = tierNames[tier] || rank.tier;
+  if (!rank.division || tier === 'CHALLENGER' || tier === 'GRANDMASTER' || tier === 'MASTER' || tier === 'UNRANKED') {
+    return name;
+  }
+  return `${name} ${rank.division}`;
+}
+
 function getRankIconUrl(tier: string) {
   if (!tier || tier === 'UNRANKED') {
     return 'https://opgg-static.akamaized.net/images/medals/default.png';
@@ -519,9 +542,12 @@ export function LeaderboardClient({
                   <div className="podium-card-body">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={getRankIconUrl(player.rank.tier)} alt={player.rank.tier} className="podium-emblem" />
-                    <div className="podium-lp-display">
-                      <span className="podium-lp-value">{player.rank.leaguePoints}</span>
-                      <span className="podium-lp-label">LP</span>
+                    <div className="podium-rank-info">
+                      <span className="podium-rank-name">{formatRank(player.rank)}</span>
+                      <div className="podium-lp-display">
+                        <span className="podium-lp-value">{player.rank.leaguePoints}</span>
+                        <span className="podium-lp-label">LP</span>
+                      </div>
                     </div>
                   </div>
                   <div className="podium-card-footer">
