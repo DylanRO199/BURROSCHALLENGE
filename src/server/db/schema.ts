@@ -49,6 +49,9 @@ export const players = pgTable(
     activeGameStartTime: timestamp('active_game_start_time', { withTimezone: true, mode: 'date' }),
     activeGameQueueId: integer('active_game_queue_id'),
     hasBlueShell: boolean('has_blue_shell').notNull().default(false),
+    blueShellCount: integer('blue_shell_count').notNull().default(0),
+    shieldExpiresAt: timestamp('shield_expires_at', { withTimezone: true, mode: 'date' }),
+    activePunishments: text('active_punishments').default('[]'),
     lastRefreshedAt: timestamp('last_refreshed_at', { withTimezone: true, mode: 'date' }),
   },
   (table) => [uniqueIndex('players_riot_id_unique').on(table.riotId)]

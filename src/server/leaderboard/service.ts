@@ -219,6 +219,17 @@ export function createLeaderboardService({
 						activeGameStartTime: p.activeGameStartTime ? p.activeGameStartTime.toISOString() : null,
 						activeGameQueueId: p.activeGameQueueId ?? null,
 						hasBlueShell: p.hasBlueShell || false,
+						blueShellCount: p.blueShellCount || 0,
+						shieldHoursLeft: p.shieldExpiresAt && p.shieldExpiresAt.getTime() > now().getTime()
+							? Math.max(1, Math.ceil((p.shieldExpiresAt.getTime() - now().getTime()) / 3600000))
+							: null,
+						punishments: (() => {
+							try {
+								return p.activePunishments ? JSON.parse(p.activePunishments) : [];
+							} catch {
+								return [];
+							}
+						})(),
 					};
 				})
 			);
@@ -269,6 +280,9 @@ export function createLeaderboardService({
 					activeGameStartTime: p.activeGameStartTime ?? null,
 					activeGameQueueId: p.activeGameQueueId ?? null,
 					hasBlueShell: p.hasBlueShell,
+					blueShellCount: p.blueShellCount,
+					shieldHoursLeft: p.shieldHoursLeft,
+					punishments: p.punishments,
 				};
 			});
 

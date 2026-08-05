@@ -29,5 +29,8 @@ export type LeaderboardDto = {
     activeGameStartTime: string | null;
     activeGameQueueId: number | null;
     hasBlueShell: boolean;
+    blueShellCount: number;
+    shieldHoursLeft: number | null;
+    punishments: Array<{ id: string; gamesLeft: number }>;
   }>;
 };

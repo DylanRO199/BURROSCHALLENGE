@@ -74,6 +74,7 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
             <th>KDA</th>
             <th>Racha</th>
             <th>Últimas</th>
+            <th>Shells</th>
           </tr>
         </thead>
         <tbody>
@@ -180,6 +181,63 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
                 </td>
                 <td>
                   <RecentResults results={player.stats.recentResults} />
+                </td>
+                <td className="shells-cell">
+                  <div className="shells-flex">
+                    {/* 1. Shield Badge */}
+                    {player.shieldHoursLeft !== null && (
+                      <div className="shell-badge shield-active" title={`Protegido por escudo. Expira en ${player.shieldHoursLeft}h.`}>
+                        <span className="shell-emoji">🛡️</span>
+                        <span className="shell-counter">{player.shieldHoursLeft}h</span>
+                      </div>
+                    )}
+
+                    {/* 2. Blue Shell Badge */}
+                    {player.blueShellCount > 0 && (
+                      <div className="shell-badge blue-shell-active-badge" title={`Atacado por ${player.blueShellCount} caparazón(es) azul(es).`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/images/blue-shell.jpg" alt="Shell" className="mini-shell-icon" />
+                        <span className="shell-counter count-bubble">{player.blueShellCount}</span>
+                      </div>
+                    )}
+
+                    {/* 3. Punishments Badges */}
+                    {player.punishments.map((pun) => {
+                      let icon = '✴️';
+                      let title = 'Castigo Especial';
+                      let colorClass = 'special-punish';
+
+                      if (pun.id === 'no_boots') {
+                        icon = '🥾';
+                        title = 'Castigo: Prohibido comprar botas';
+                        colorClass = 'boots-punish';
+                      } else if (pun.id === 'no_flash') {
+                        icon = '⚡';
+                        title = 'Castigo: Prohibido usar Destello (Flash)';
+                        colorClass = 'flash-punish';
+                      } else if (pun.id === 'no_audio') {
+                        icon = '🔇';
+                        title = 'Castigo: Jugar sin audio en el juego';
+                        colorClass = 'audio-punish';
+                      } else if (pun.id === 'keyboard') {
+                        icon = '⌨️';
+                        title = 'Castigo: Jugar con teclas cambiadas / mano cambiada';
+                        colorClass = 'keys-punish';
+                      }
+
+                      return (
+                        <div key={pun.id} className={`shell-badge punishment-active-badge ${colorClass}`} title={`${title} - Partidas restantes: ${pun.gamesLeft}`}>
+                          <span className="shell-emoji">{icon}</span>
+                          <span className="shell-slash-overlay">/</span>
+                          <span className="shell-counter count-bubble punish-count">{pun.gamesLeft}</span>
+                        </div>
+                      );
+                    })}
+
+                    {player.shieldHoursLeft === null && player.blueShellCount === 0 && player.punishments.length === 0 && (
+                      <span className="shells-empty">—</span>
+                    )}
+                  </div>
                 </td>
               </tr>
             );

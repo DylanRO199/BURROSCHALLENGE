@@ -264,4 +264,19 @@ export class DrizzleLeaderboardRepository {
       .set({ hasBlueShell })
       .where(eq(players.riotId, riotId));
   }
+
+  async updatePlayerShellsAndPunishments(
+    riotId: string,
+    data: {
+      hasBlueShell?: boolean;
+      blueShellCount?: number;
+      shieldExpiresAt?: Date | null;
+      activePunishments?: string;
+    }
+  ) {
+    await db
+      .update(players)
+      .set(data)
+      .where(eq(players.riotId, riotId));
+  }
 }
