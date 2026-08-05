@@ -648,6 +648,27 @@ export function LeaderboardClient({
               </div>
             </div>
 
+            <div className="info-rules-detail">
+              <div className="rules-block">
+                <h3>📈 ¿Cómo conseguir Caparazones y Escudos?</h3>
+                <ul>
+                  <li><strong>Hitos en Partida (In-Game)</strong>: Lograr una Pentakill en una partida de torneo otorga automáticamente 1 Caparazón Azul. Lograr una racha de 5 victorias consecutivas otorga 1 Escudo de Protección (8 horas).</li>
+                  <li><strong>Remontadas Legendarias</strong>: Ganar una partida que supere los 45 minutos de duración (donde el equipo estuvo por detrás en oro) otorga 1 Caparazón Azul como recompensa por resiliencia.</li>
+                  <li><strong>Récord Diario de LP</strong>: El jugador que logre la mayor subida neta de LP durante un día calendario recibe 1 Caparazón Azul para utilizar al día siguiente.</li>
+                  <li><strong>Dinámica de Moderación / Comunidad</strong>: Los administradores y la audiencia pueden sortear o asignar caparazones adicionales a través de predicciones o interacciones del chat.</li>
+                </ul>
+              </div>
+
+              <div className="rules-block">
+                <h3>🎮 ¿Cómo se utilizan los Caparazones?</h3>
+                <ul>
+                  <li><strong>Lanzamiento</strong>: Un jugador puede lanzar un caparazón a cualquier rival de la tabla que esté por encima de su posición actual (para recortar distancias) o a su elección.</li>
+                  <li><strong>La Penalización</strong>: Al recibir el caparazón, el administrador girará la ruleta de castigos. El jugador afectado deberá jugar sus siguientes partidas clasificatorias cumpliendo el hándicap (ej. sin botas, sin flash, etc.).</li>
+                  <li><strong>Evidencia</strong>: Para que la partida cuente y se retire el castigo, el jugador debe transmitir la partida por Discord/Twitch o enviar capturas detalladas del HUD e inventario al final de la partida para validar que cumplió con la restricción.</li>
+                </ul>
+              </div>
+            </div>
+
             <div className="punishments-dictionary">
               <h3>🚫 Catálogo de Castigos Disponibles</h3>
               <div className="punish-grid">

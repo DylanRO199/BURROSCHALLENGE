@@ -1874,6 +1874,58 @@ tbody tr:hover { background: rgba(200, 170, 110, 0.06); }
   }
 }
 
+/* Detailed rules styling */
+.info-rules-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 24px;
+}
+
+.rules-block {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.rules-block h3 {
+  font-family: var(--font-oOutfit, 'Outfit', 'Inter', sans-serif);
+  font-size: 1.05rem;
+  color: #00a8ff;
+  margin-bottom: 14px;
+  text-shadow: 0 0 10px rgba(0, 168, 255, 0.15);
+}
+
+.rules-block ul {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.rules-block li {
+  color: #8f9dbf;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+.rules-block li::marker {
+  color: #00a8ff;
+}
+
+.rules-block li strong {
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .info-rules-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 
 
 
