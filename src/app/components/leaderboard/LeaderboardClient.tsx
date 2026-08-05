@@ -513,8 +513,16 @@ export function LeaderboardClient({
               else if (player.position === 2) { podiumCls = 'second-place'; badgeIcon = '🥈'; }
               else if (player.position === 3) { podiumCls = 'third-place'; badgeIcon = '🥉'; }
 
+              const hasBlueShell = player.hasBlueShell;
+
               return (
-                <div key={player.riotId} className={`podium-card ${podiumCls} ${animClass}`}>
+                <div key={player.riotId} className={`podium-card ${podiumCls} ${animClass} ${hasBlueShell ? 'blue-shell-active' : ''}`}>
+                  {hasBlueShell && (
+                    <div className="podium-blue-shell-indicator" title="¡Este jugador tiene un CAPARAZÓN AZUL activo!">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/images/blue-shell.jpg" alt="Blue Shell" className="blue-shell-icon-floating" />
+                    </div>
+                  )}
                   <div className="podium-card-header">
                     <span className="podium-badge">{badgeIcon}</span>
                     <div className="podium-player-info">

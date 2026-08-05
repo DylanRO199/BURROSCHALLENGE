@@ -28,5 +28,6 @@ export type LeaderboardDto = {
     isOnline: boolean;
     activeGameStartTime: string | null;
     activeGameQueueId: number | null;
+    hasBlueShell: boolean;
   }>;
 };

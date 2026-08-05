@@ -79,9 +79,10 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
         <tbody>
           {players.map((player) => {
             const [gameName, tagLine] = player.riotId.split('#');
+            const hasBlueShell = player.hasBlueShell;
             const opggUrl = `https://www.op.gg/summoners/las/${encodeURIComponent(gameName)}-${encodeURIComponent(tagLine)}`;
             return (
-              <tr key={player.riotId}>
+              <tr key={player.riotId} className={hasBlueShell ? 'blue-shell-row' : ''}>
                 <td className={`position ${podiumClass(player.position)}`}>
                   <div className="pos-cell">
                     <span className="pos-number">{player.position}</span>
@@ -112,7 +113,13 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
                     </div>
                     <div>
                       <div className="player-name-wrapper">
-                        <span className="player-name">{player.riotId}</span>
+                        <span className="player-name">
+                          {player.riotId}
+                          {player.hasBlueShell && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src="/images/blue-shell.jpg" alt="Blue Shell" className="table-blue-shell-icon" title="¡Este jugador tiene un CAPARAZÓN AZUL activo!" />
+                          )}
+                        </span>
                         <div className="player-badges" style={{ display: 'inline-flex', gap: '4px' }}>
                           <a
                             href={opggUrl}

@@ -218,6 +218,7 @@ export function createLeaderboardService({
 						isOnline: p.isOnline || false,
 						activeGameStartTime: p.activeGameStartTime ? p.activeGameStartTime.toISOString() : null,
 						activeGameQueueId: p.activeGameQueueId ?? null,
+						hasBlueShell: p.hasBlueShell || false,
 					};
 				})
 			);
@@ -267,6 +268,7 @@ export function createLeaderboardService({
 					isOnline: p.isOnline,
 					activeGameStartTime: p.activeGameStartTime ?? null,
 					activeGameQueueId: p.activeGameQueueId ?? null,
+					hasBlueShell: p.hasBlueShell,
 				};
 			});
 

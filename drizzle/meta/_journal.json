@@ -57,6 +57,13 @@
       "when": 1785742902693,
       "tag": "0007_hesitant_frank_castle",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785957388780,
+      "tag": "0008_secret_yellow_claw",
+      "breakpoints": true
     }
   ]
 }

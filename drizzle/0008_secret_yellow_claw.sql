@@ -1,0 +1,1 @@
+ALTER TABLE "players" ADD COLUMN "has_blue_shell" boolean DEFAULT false NOT NULL;

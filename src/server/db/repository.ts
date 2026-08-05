@@ -257,4 +257,11 @@ export class DrizzleLeaderboardRepository {
       lastSnapshotBeforeToday: beforeToday[0] || null,
     };
   }
+
+  async updatePlayerBlueShell(riotId: string, hasBlueShell: boolean) {
+    await db
+      .update(players)
+      .set({ hasBlueShell })
+      .where(eq(players.riotId, riotId));
+  }
 }
