@@ -20,13 +20,28 @@ export const dynamic = 'force-dynamic';
 export async function POST() {
   try {
     const repository = new DrizzleLeaderboardRepository();
+    const tournamentId = 'soloq-challenge';
+
+    // Check cooldown to protect Riot API Key from 429
+    const tournament = await repository.getTournament();
+    const now = new Date();
+    if (tournament?.lastRankAttemptedAt) {
+      const elapsedMs = now.getTime() - tournament.lastRankAttemptedAt.getTime();
+      if (elapsedMs < 60000) {
+        console.log(`⏱️ Rank ping skipped (cooldown active: ${Math.round(elapsedMs / 1000)}s / 60s)`);
+        return NextResponse.json({ success: true, cached: true });
+      }
+    }
+
+    // Update cooldown timestamp in DB
+    await repository.updateTournamentRankTime(tournamentId, now);
+
     const riot = new RiotClient({ apiKey: readServerEnv().RIOT_API_KEY });
     const config = loadConfig();
     const startsAt = config.tournament.startsAt ? new Date(config.tournament.startsAt) : null;
     const endsAt = config.tournament.endsAt ? new Date(config.tournament.endsAt) : null;
 
     const players = await repository.getPlayers();
-    const now = new Date();
     const updates: string[] = [];
 
     // Process in batches of 4 with small pauses to avoid bursting rate limit

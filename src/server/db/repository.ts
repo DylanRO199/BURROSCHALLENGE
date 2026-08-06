@@ -21,6 +21,14 @@ export class DrizzleLeaderboardRepository {
     await db.update(tournaments).set(data).where(eq(tournaments.id, id));
   }
 
+  async updateTournamentSpectatorTime(id: string, date: Date) {
+    await db.update(tournaments).set({ lastSpectatorAttemptedAt: date }).where(eq(tournaments.id, id));
+  }
+
+  async updateTournamentRankTime(id: string, date: Date) {
+    await db.update(tournaments).set({ lastRankAttemptedAt: date }).where(eq(tournaments.id, id));
+  }
+
   async ensureTournament(data: {
     id: string;
     name: string;

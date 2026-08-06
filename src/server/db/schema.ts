@@ -28,6 +28,8 @@ export const tournaments = pgTable('tournaments', {
   refreshTtlSeconds: integer('refresh_ttl_seconds').notNull(),
   lastAttemptedAt: timestamp('last_attempted_at', { withTimezone: true, mode: 'date' }),
   lastSuccessfulAt: timestamp('last_successful_at', { withTimezone: true, mode: 'date' }),
+  lastSpectatorAttemptedAt: timestamp('last_spectator_attempted_at', { withTimezone: true, mode: 'date' }),
+  lastRankAttemptedAt: timestamp('last_rank_attempted_at', { withTimezone: true, mode: 'date' }),
   refreshStatus: refreshStatusEnum('refresh_status').notNull().default('idle'),
 });
 

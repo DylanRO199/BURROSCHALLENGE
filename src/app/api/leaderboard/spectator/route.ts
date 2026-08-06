@@ -16,8 +16,23 @@ export const dynamic = 'force-dynamic';
 export async function POST() {
   try {
     const repository = new DrizzleLeaderboardRepository();
-    const riot = new RiotClient({ apiKey: readServerEnv().RIOT_API_KEY });
+    const tournamentId = 'soloq-challenge';
+    
+    // Check cooldown to protect Riot API Key from 429
+    const tournament = await repository.getTournament();
+    const now = new Date();
+    if (tournament?.lastSpectatorAttemptedAt) {
+      const elapsedMs = now.getTime() - tournament.lastSpectatorAttemptedAt.getTime();
+      if (elapsedMs < 45000) {
+        console.log(`⏱️ Spectator ping skipped (cooldown active: ${Math.round(elapsedMs / 1000)}s / 45s)`);
+        return NextResponse.json({ success: true, cached: true });
+      }
+    }
 
+    // Update cooldown timestamp in DB
+    await repository.updateTournamentSpectatorTime(tournamentId, now);
+
+    const riot = new RiotClient({ apiKey: readServerEnv().RIOT_API_KEY });
     const players = await repository.getPlayers();
 
     // Check all players in small batches of 4 to stay under rate limits

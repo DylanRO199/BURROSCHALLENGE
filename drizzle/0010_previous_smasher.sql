@@ -1,0 +1,2 @@
+ALTER TABLE "tournaments" ADD COLUMN "last_spectator_attempted_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "tournaments" ADD COLUMN "last_rank_attempted_at" timestamp with time zone;
