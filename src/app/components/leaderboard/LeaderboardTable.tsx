@@ -442,9 +442,15 @@ function PlayerDetailDrawer({
                       </div>
 
                       <div className="match-lp-col">
-                        <span className={isWin ? 'lp-gain-text' : isRemake ? 'lp-remake-text' : 'lp-loss-text'}>
-                          {isWin ? '+31 LP' : isRemake ? '0 LP' : '-16 LP'}
-                        </span>
+                        {(() => {
+                          const change = match.lpChange ?? 0;
+                          const changeText = change > 0 ? `+${change} LP` : change === 0 ? '0 LP' : `${change} LP`;
+                          return (
+                            <span className={isWin ? 'lp-gain-text' : isRemake ? 'lp-remake-text' : 'lp-loss-text'}>
+                              {changeText}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   );

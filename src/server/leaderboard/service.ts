@@ -102,25 +102,81 @@ export function createLeaderboardService({
 					const prevSnapshot = snapshots[1] || null;
 					const matchesForRecent = matchesForStats.slice(0, 20);
 
-					const recentResults = matchesForRecent.map((m: any) => ({
-						result: (m.win === null ? 'R' : m.win ? 'W' : 'L') as 'W' | 'L' | 'R',
-						championName: m.championName,
-						kills: m.kills ?? 0,
-						deaths: m.deaths ?? 0,
-						assists: m.assists ?? 0,
-						playedAt: m.playedAt ? m.playedAt.toISOString() : undefined,
-						durationSeconds: m.durationSeconds ?? undefined,
-						lane: m.lane ?? undefined,
-						items: [
-							m.item0 ?? 0,
-							m.item1 ?? 0,
-							m.item2 ?? 0,
-							m.item3 ?? 0,
-							m.item4 ?? 0,
-							m.item5 ?? 0,
-							m.item6 ?? 0,
-						],
-					}));
+					// Calculate the exact LP gain of the last won match and LP loss of the last lost match
+					// by iterating descending (newest first) through rank snapshots
+					let lastWinGain = 0;
+					let lastLossLoss = 0;
+
+					const sortedSnaps = [...allSnapshots].sort((a: any, b: any) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime());
+					for (let i = 0; i < sortedSnaps.length - 1; i++) {
+						const currentAbs = getAbsoluteLp(sortedSnaps[i].tier, sortedSnaps[i].division, sortedSnaps[i].leaguePoints);
+						const prevAbs = getAbsoluteLp(sortedSnaps[i + 1].tier, sortedSnaps[i + 1].division, sortedSnaps[i + 1].leaguePoints);
+						const diff = currentAbs - prevAbs;
+						if (diff > 0 && lastWinGain === 0 && diff < 100) {
+							lastWinGain = diff;
+						} else if (diff < 0 && lastLossLoss === 0 && Math.abs(diff) < 100) {
+							lastLossLoss = Math.abs(diff);
+						}
+						if (lastWinGain > 0 && lastLossLoss > 0) {
+							break;
+						}
+					}
+					if (lastWinGain === 0) lastWinGain = 30; // default standard LoL win LP gain fallback
+					if (lastLossLoss === 0) lastLossLoss = 15; // default standard LoL loss LP loss fallback
+
+					const recentResults = matchesForRecent.map((m: any) => {
+						const isWin = m.win === true;
+						const isRemake = m.win === null;
+
+						// Dynamic exact LP calculation for this specific match based on surrounding rank snapshots
+						let matchLpChange = 0;
+						if (isRemake) {
+							matchLpChange = 0;
+						} else {
+							// Find the snapshot taken right after this match
+							const snapAfter = sortedSnaps.find((s: any) => new Date(s.observedAt).getTime() > new Date(m.playedAt).getTime());
+							if (snapAfter) {
+								const snapAfterIdx = sortedSnaps.indexOf(snapAfter);
+								// Find the snapshot immediately preceding snapAfter (which is at index snapAfterIdx + 1)
+								const snapBefore = sortedSnaps[snapAfterIdx + 1];
+								if (snapBefore) {
+									const absAfter = getAbsoluteLp(snapAfter.tier, snapAfter.division, snapAfter.leaguePoints);
+									const absBefore = getAbsoluteLp(snapBefore.tier, snapBefore.division, snapBefore.leaguePoints);
+									const diff = absAfter - absBefore;
+									// Check if the change direction matches the game result
+									if ((isWin && diff > 0 && diff < 100) || (!isWin && diff < 0 && Math.abs(diff) < 100)) {
+										matchLpChange = diff;
+									}
+								}
+							}
+							
+							// If we couldn't match a precise snapshot diff, fall back to the player's last win/loss value
+							if (matchLpChange === 0) {
+								matchLpChange = isWin ? lastWinGain : -lastLossLoss;
+							}
+						}
+
+						return {
+							result: (m.win === null ? 'R' : m.win ? 'W' : 'L') as 'W' | 'L' | 'R',
+							championName: m.championName,
+							kills: m.kills ?? 0,
+							deaths: m.deaths ?? 0,
+							assists: m.assists ?? 0,
+							playedAt: m.playedAt ? m.playedAt.toISOString() : undefined,
+							durationSeconds: m.durationSeconds ?? undefined,
+							lane: m.lane ?? undefined,
+							lpChange: matchLpChange,
+							items: [
+								m.item0 ?? 0,
+								m.item1 ?? 0,
+								m.item2 ?? 0,
+								m.item3 ?? 0,
+								m.item4 ?? 0,
+								m.item5 ?? 0,
+								m.item6 ?? 0,
+							],
+						};
+					});
 
 					const validMatches = matchesForStats.filter((m: any) => m.win !== null);
 					const games = validMatches.length;
@@ -208,27 +264,9 @@ export function createLeaderboardService({
 						}
 					}
 
-					// Calculate average LP gain and loss from all snapshots (using already fetched allSnapshots)
-					allSnapshots.sort((a: any, b: any) => new Date(a.observedAt).getTime() - new Date(b.observedAt).getTime());
-
-					const positiveDiffs: number[] = [];
-					const negativeDiffs: number[] = [];
-					for (let i = 1; i < allSnapshots.length; i++) {
-						const currentAbs = getAbsoluteLp(allSnapshots[i].tier, allSnapshots[i].division, allSnapshots[i].leaguePoints);
-						const prevAbs = getAbsoluteLp(allSnapshots[i - 1].tier, allSnapshots[i - 1].division, allSnapshots[i - 1].leaguePoints);
-						const diff = currentAbs - prevAbs;
-						if (diff > 0 && diff < 100) {
-							positiveDiffs.push(diff);
-						} else if (diff < 0 && Math.abs(diff) < 100) {
-							negativeDiffs.push(Math.abs(diff));
-						}
-					}
-					const avgLpGain = positiveDiffs.length > 0
-						? Math.round(positiveDiffs.reduce((a, b) => a + b, 0) / positiveDiffs.length)
-						: 30;
-					const avgLpLoss = negativeDiffs.length > 0
-						? Math.round(negativeDiffs.reduce((a, b) => a + b, 0) / negativeDiffs.length)
-						: 30;
+					// Map the dynamic values to avgLpGain and avgLpLoss properties to expose last match win/loss values
+					const avgLpGain = lastWinGain;
+					const avgLpLoss = lastLossLoss;
 
 					return {
 						riotId: p.riotId,
