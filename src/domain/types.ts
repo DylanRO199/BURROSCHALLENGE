@@ -40,6 +40,7 @@ export type RecentMatchResult = {
   playedAt?: string;
   durationSeconds?: number;
   lane?: string;
+  items?: number[];
 };
 
 export type TournamentStatistics = {

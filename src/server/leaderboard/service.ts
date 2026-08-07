@@ -106,6 +106,15 @@ export function createLeaderboardService({
 						playedAt: m.playedAt ? m.playedAt.toISOString() : undefined,
 						durationSeconds: m.durationSeconds ?? undefined,
 						lane: m.lane ?? undefined,
+						items: [
+							m.item0 ?? 0,
+							m.item1 ?? 0,
+							m.item2 ?? 0,
+							m.item3 ?? 0,
+							m.item4 ?? 0,
+							m.item5 ?? 0,
+							m.item6 ?? 0,
+						],
 					}));
 
 					const validMatches = matchesForStats.filter((m: any) => m.win !== null);

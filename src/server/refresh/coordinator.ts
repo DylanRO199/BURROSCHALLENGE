@@ -315,6 +315,13 @@ export async function refreshPlayerMatchesOnly({
           deaths: participant.deaths,
           assists: participant.assists,
           durationSeconds: matchData.info.gameDuration,
+          item0: participant.item0,
+          item1: participant.item1,
+          item2: participant.item2,
+          item3: participant.item3,
+          item4: participant.item4,
+          item5: participant.item5,
+          item6: participant.item6,
         });
       }
     }

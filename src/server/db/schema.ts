@@ -91,6 +91,13 @@ export const playerMatches = pgTable(
     deaths: integer('deaths').notNull(),
     assists: integer('assists').notNull(),
     durationSeconds: integer('duration_seconds').notNull(),
+    item0: integer('item_0').notNull().default(0),
+    item1: integer('item_1').notNull().default(0),
+    item2: integer('item_2').notNull().default(0),
+    item3: integer('item_3').notNull().default(0),
+    item4: integer('item_4').notNull().default(0),
+    item5: integer('item_5').notNull().default(0),
+    item6: integer('item_6').notNull().default(0),
   },
   (table) => [
     uniqueIndex('player_matches_player_match_unique').on(table.playerId, table.matchId),

@@ -351,9 +351,6 @@ function PlayerDetailDrawer({
                   const assists = match.assists ?? 0;
                   const kdaRatio = deaths === 0 ? (kills + assists) : ((kills + assists) / deaths).toFixed(1);
 
-                  // Dummy item placeholders that look premium
-                  const dummyItems = [1, 2, 3, 4, 5, 6];
-
                   return (
                     <div
                       key={i}
@@ -394,10 +391,39 @@ function PlayerDetailDrawer({
                       </div>
 
                       <div className="match-items-col">
-                        {dummyItems.map((itemNum) => (
-                          <div key={itemNum} className="match-item-slot" />
-                        ))}
-                        <div className="match-item-slot trinket-slot" />
+                        {/* Normal item slots (indexes 0 to 5) */}
+                        {Array.from({ length: 6 }).map((_, idx) => {
+                          const itemId = match.items ? match.items[idx] : 0;
+                          return itemId && itemId > 0 ? (
+                            <div key={idx} className="match-item-slot has-item">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`https://ddragon.leagueoflegends.com/cdn/15.1.1/img/item/${itemId}.png`}
+                                alt=""
+                                className="match-item-img"
+                              />
+                            </div>
+                          ) : (
+                            <div key={idx} className="match-item-slot" />
+                          );
+                        })}
+
+                        {/* Trinket slot (index 6) */}
+                        {(() => {
+                          const trinketId = match.items ? match.items[6] : 0;
+                          return trinketId && trinketId > 0 ? (
+                            <div className="match-item-slot trinket-slot has-item">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`https://ddragon.leagueoflegends.com/cdn/15.1.1/img/item/${trinketId}.png`}
+                                alt=""
+                                className="match-item-img"
+                              />
+                            </div>
+                          ) : (
+                            <div className="match-item-slot trinket-slot" />
+                          );
+                        })()}
                       </div>
 
                       <div className="match-lp-col">
