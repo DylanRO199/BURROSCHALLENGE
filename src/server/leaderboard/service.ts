@@ -90,11 +90,16 @@ export function createLeaderboardService({
 
 			const playerDtos = await Promise.all(
 				players.map(async (p: any) => {
-					const snapshots = await repository.getRankSnapshots(p.id, 2);
+					// Fetch snapshots and matches in parallel to maximize query performance and eliminate database bottleneck latency
+					const [snapshots, matchesForStats, allSnapshots, daySnapshots] = await Promise.all([
+						repository.getRankSnapshots(p.id, 2),
+						repository.getMatches(p.id, 300),
+						repository.getRankSnapshots(p.id, 300),
+						repository.getRankSnapshotsForDay(p.id, todaySantiago)
+					]);
+
 					const snapshot = snapshots[0] || null;
 					const prevSnapshot = snapshots[1] || null;
-
-					const matchesForStats = await repository.getMatches(p.id, 1000);
 					const matchesForRecent = matchesForStats.slice(0, 20);
 
 					const recentResults = matchesForRecent.map((m: any) => ({
@@ -183,9 +188,6 @@ export function createLeaderboardService({
 
 					const profileIconId = snapshot?.profileIconId ?? p.profileIconId ?? null;
 					const profileIconUrl = profileIconId ? `https://ddragon.leagueoflegends.com/cdn/${iconVersion}/img/profileicon/${profileIconId}.png` : null;
-
-					// Calculate daily LP gains and losses from today's snapshots (America/Santiago timezone)
-					const daySnapshots = await repository.getRankSnapshotsForDay(p.id, todaySantiago);
 					const snapshotList = [];
 					if (daySnapshots.lastSnapshotBeforeToday) {
 						snapshotList.push(daySnapshots.lastSnapshotBeforeToday);
@@ -206,8 +208,7 @@ export function createLeaderboardService({
 						}
 					}
 
-					// Calculate average LP gain and loss from all snapshots
-					const allSnapshots = await repository.getRankSnapshots(p.id, 1000);
+					// Calculate average LP gain and loss from all snapshots (using already fetched allSnapshots)
 					allSnapshots.sort((a: any, b: any) => new Date(a.observedAt).getTime() - new Date(b.observedAt).getTime());
 
 					const positiveDiffs: number[] = [];
@@ -340,6 +341,7 @@ export function createLeaderboardService({
 					lastSuccessfulAt,
 					stale,
 				},
+				iconVersion,
 				players: playersWithPosition,
 			};
 

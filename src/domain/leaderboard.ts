@@ -17,6 +17,7 @@ export type LeaderboardDto = {
     lastSuccessfulAt: string | null;
     stale: boolean;
   };
+  iconVersion: string;
   players: Array<{
     position: number;
     positionChange: number;

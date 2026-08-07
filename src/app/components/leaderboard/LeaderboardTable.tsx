@@ -54,7 +54,13 @@ const laneNames: Record<string, string> = {
   UTILITY: 'Soporte (Support)',
 };
 
-export function LeaderboardTable({ players }: { players: LeaderboardDto['players'] }) {
+export function LeaderboardTable({
+  players,
+  iconVersion,
+}: {
+  players: LeaderboardDto['players'];
+  iconVersion: string;
+}) {
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
 
   if (players.length === 0) {
@@ -269,7 +275,7 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
                 {isExpanded && (
                   <tr className="expanded-row-container" key={`${player.riotId}-expanded`}>
                     <td colSpan={13} className="expanded-td">
-                      <PlayerDetailDrawer player={player} opggUrl={opggUrl} />
+                      <PlayerDetailDrawer player={player} opggUrl={opggUrl} iconVersion={iconVersion} />
                     </td>
                   </tr>
                 )}
@@ -286,9 +292,11 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
 function PlayerDetailDrawer({
   player,
   opggUrl,
+  iconVersion,
 }: {
   player: LeaderboardDto['players'][0];
   opggUrl: string;
+  iconVersion: string;
 }) {
   const [activeTab, setActiveTab] = useState<'historial' | 'stats' | 'shells'>('historial');
 
@@ -405,7 +413,7 @@ function PlayerDetailDrawer({
                             <div key={idx} className="match-item-slot has-item">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={`https://ddragon.leagueoflegends.com/cdn/15.1.1/img/item/${itemId}.png`}
+                                src={`https://ddragon.leagueoflegends.com/cdn/${iconVersion || '14.15.1'}/img/item/${itemId}.png`}
                                 alt=""
                                 className="match-item-img"
                               />
@@ -422,7 +430,7 @@ function PlayerDetailDrawer({
                             <div className="match-item-slot trinket-slot has-item">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={`https://ddragon.leagueoflegends.com/cdn/15.1.1/img/item/${trinketId}.png`}
+                                src={`https://ddragon.leagueoflegends.com/cdn/${iconVersion || '14.15.1'}/img/item/${trinketId}.png`}
                                 alt=""
                                 className="match-item-img"
                               />

@@ -603,7 +603,7 @@ export function LeaderboardClient({
             <h2>CLASIFICACIÓN</h2>
             <span>{data.players.length} participantes</span>
           </div>
-          <LeaderboardTable players={data.players} />
+          <LeaderboardTable players={data.players} iconVersion={data.iconVersion} />
         </section>
       )}
 
