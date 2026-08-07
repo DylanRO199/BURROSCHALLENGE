@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'BURROS QUEUE CHALLENGE - SoloQ Leaderboard',
-  icons: { icon: '/icon.png' },
+  icons: { icon: '/icon.jpg' },
   description: 'Leaderboard oficial del torneo BURROS QUEUE CHALLENGE en League of Legends LAS.',
 };
 
