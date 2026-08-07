@@ -206,6 +206,29 @@ export function createLeaderboardService({
 						}
 					}
 
+					// Calculate average LP gain and loss from all snapshots
+					const allSnapshots = await repository.getRankSnapshots(p.id, 1000);
+					allSnapshots.sort((a: any, b: any) => new Date(a.observedAt).getTime() - new Date(b.observedAt).getTime());
+
+					const positiveDiffs: number[] = [];
+					const negativeDiffs: number[] = [];
+					for (let i = 1; i < allSnapshots.length; i++) {
+						const currentAbs = getAbsoluteLp(allSnapshots[i].tier, allSnapshots[i].division, allSnapshots[i].leaguePoints);
+						const prevAbs = getAbsoluteLp(allSnapshots[i - 1].tier, allSnapshots[i - 1].division, allSnapshots[i - 1].leaguePoints);
+						const diff = currentAbs - prevAbs;
+						if (diff > 0 && diff < 100) {
+							positiveDiffs.push(diff);
+						} else if (diff < 0 && Math.abs(diff) < 100) {
+							negativeDiffs.push(Math.abs(diff));
+						}
+					}
+					const avgLpGain = positiveDiffs.length > 0
+						? Math.round(positiveDiffs.reduce((a, b) => a + b, 0) / positiveDiffs.length)
+						: 30;
+					const avgLpLoss = negativeDiffs.length > 0
+						? Math.round(negativeDiffs.reduce((a, b) => a + b, 0) / negativeDiffs.length)
+						: 30;
+
 					return {
 						riotId: p.riotId,
 						profileIconUrl,
@@ -231,6 +254,8 @@ export function createLeaderboardService({
 							dailyLostLp,
 							dailyWins,
 							dailyLosses,
+							avgLpGain,
+							avgLpLoss,
 						},
 						error:null,
 						isOnline: p.isOnline || false,

@@ -63,4 +63,6 @@ export type TournamentStatistics = {
   dailyLostLp?: number;
   dailyWins?: number;
   dailyLosses?: number;
+  avgLpGain?: number;
+  avgLpLoss?: number;
 };

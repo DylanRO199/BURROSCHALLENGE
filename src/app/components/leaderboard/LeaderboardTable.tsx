@@ -77,6 +77,7 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
             <th>KDA</th>
             <th>Racha</th>
             <th>Últimas</th>
+            <th>±LP</th>
             <th>Shells</th>
           </tr>
         </thead>
@@ -201,6 +202,12 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
                   <td>
                     <RecentResults results={player.stats.recentResults} />
                   </td>
+                  <td>
+                    <div className="avg-lp-cell" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }} title="Promedio de LP ganado y perdido por partida">
+                      <span className="lp-gain" style={{ fontWeight: 700, color: '#00f5a0', fontSize: '0.8rem' }}>▲ {player.stats.avgLpGain ?? 30}</span>
+                      <span className="lp-loss" style={{ fontWeight: 700, color: '#ff4a4a', fontSize: '0.8rem' }}>▼ {player.stats.avgLpLoss ?? 30}</span>
+                    </div>
+                  </td>
                   <td className="shells-cell">
                     <div className="shells-flex">
                       {/* 1. Shield Badge */}
@@ -261,7 +268,7 @@ export function LeaderboardTable({ players }: { players: LeaderboardDto['players
                 </tr>
                 {isExpanded && (
                   <tr className="expanded-row-container" key={`${player.riotId}-expanded`}>
-                    <td colSpan={12} className="expanded-td">
+                    <td colSpan={13} className="expanded-td">
                       <PlayerDetailDrawer player={player} opggUrl={opggUrl} />
                     </td>
                   </tr>
