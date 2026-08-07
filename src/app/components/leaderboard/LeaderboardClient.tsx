@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LeaderboardDto } from '@/domain/leaderboard';
 import { LeaderboardTable } from './LeaderboardTable';
 import { StatusBanner } from './StatusBanner';
+import Link from 'next/link';
 import { VisitorCounter } from '../VisitorCounter';
 import { LiveBadge } from './LiveBadge';
 import { Countdown } from './Countdown';
@@ -481,9 +482,9 @@ export function LeaderboardClient({
         <div className="toolbar">
           <span className="last-update">Última actualización: {updatedAt}</span>
           <div className="toolbar-actions">
-            <a href="/estadisticas" className="lol-btn lol-btn-ghost" style={{ textDecoration: 'none' }}>
+            <Link href="/estadisticas" className="lol-btn lol-btn-ghost" style={{ textDecoration: 'none' }}>
               📊 Estadísticas
-            </a>
+            </Link>
             <button className="lol-btn" onClick={() => void refresh()} disabled={refreshing}>
               {refreshing ? 'Actualizando...' : 'Actualizar ranking'}
             </button>

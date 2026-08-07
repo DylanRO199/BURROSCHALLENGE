@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import type { LeaderboardDto } from '@/domain/leaderboard';
+import Link from 'next/link';
 
 type ChampionStat = {
   championName: string;
@@ -156,7 +157,7 @@ export function StatsClient({
           <span className="divider-line"></span>
         </div>
         <div className="toolbar" style={{ justifyContent: 'center' }}>
-          <a href="/" className="lol-btn lol-btn-ghost">← Volver al Ranking</a>
+          <Link href="/" className="lol-btn lol-btn-ghost">← Volver al Ranking</Link>
         </div>
       </header>
 
