@@ -85,6 +85,9 @@ export function createLeaderboardService({
 
 			const iconVersion = typeof getIconVersion === 'function' ? await getIconVersion() : (getIconVersion as string);
 
+			const todaySantiago = new Date(now().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+			todaySantiago.setHours(0, 0, 0, 0);
+
 			const playerDtos = await Promise.all(
 				players.map(async (p: any) => {
 					const snapshots = await repository.getRankSnapshots(p.id, 2);
@@ -100,6 +103,9 @@ export function createLeaderboardService({
 						kills: m.kills ?? 0,
 						deaths: m.deaths ?? 0,
 						assists: m.assists ?? 0,
+						playedAt: m.playedAt ? m.playedAt.toISOString() : undefined,
+						durationSeconds: m.durationSeconds ?? undefined,
+						lane: m.lane ?? undefined,
 					}));
 
 					const validMatches = matchesForStats.filter((m: any) => m.win !== null);
@@ -107,6 +113,10 @@ export function createLeaderboardService({
 					const wins = validMatches.filter((m: any) => m.win).length;
 					const losses = games - wins;
 					const winRate = games > 0 ? Math.round((wins / games) * 100) : 0;
+
+					const dailyMatches = matchesForStats.filter((m: any) => m.playedAt >= todaySantiago && m.win !== null);
+					const dailyWins = dailyMatches.filter((m: any) => m.win).length;
+					const dailyLosses = dailyMatches.length - dailyWins;
 
 					const totalKills = validMatches.reduce((s: number, m: any) => s + (m.kills || 0), 0);
 					const totalDeaths = validMatches.reduce((s: number, m: any) => s + (m.deaths || 0), 0);
@@ -166,9 +176,6 @@ export function createLeaderboardService({
 					const profileIconUrl = profileIconId ? `https://ddragon.leagueoflegends.com/cdn/${iconVersion}/img/profileicon/${profileIconId}.png` : null;
 
 					// Calculate daily LP gains and losses from today's snapshots (America/Santiago timezone)
-					const todaySantiago = new Date(now().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
-					todaySantiago.setHours(0, 0, 0, 0);
-
 					const daySnapshots = await repository.getRankSnapshotsForDay(p.id, todaySantiago);
 					const snapshotList = [];
 					if (daySnapshots.lastSnapshotBeforeToday) {
@@ -213,6 +220,8 @@ export function createLeaderboardService({
 							seasonLosses: snapshot?.seasonLosses ?? 0,
 							dailyGainedLp,
 							dailyLostLp,
+							dailyWins,
+							dailyLosses,
 						},
 						error:null,
 						isOnline: p.isOnline || false,

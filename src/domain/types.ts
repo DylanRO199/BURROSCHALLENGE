@@ -37,6 +37,9 @@ export type RecentMatchResult = {
   kills?: number;
   deaths?: number;
   assists?: number;
+  playedAt?: string;
+  durationSeconds?: number;
+  lane?: string;
 };
 
 export type TournamentStatistics = {
@@ -50,11 +53,13 @@ export type TournamentStatistics = {
   averageKills: number;
   averageDeaths: number;
   averageAssists: number;
-  recentResults: Array<RecentMatchResult | 'W' | 'L'>;
+  recentResults: Array<RecentMatchResult>;
   topChampions: Array<{ name: string; games: number }>;
   topLane: string | null;
   seasonWins?: number;
   seasonLosses?: number;
   dailyGainedLp?: number;
   dailyLostLp?: number;
+  dailyWins?: number;
+  dailyLosses?: number;
 };
