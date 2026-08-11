@@ -24,9 +24,9 @@ function getRankIconUrl(tier: string) {
   return `https://opgg-static.akamaized.net/images/medals_new/${tier.toLowerCase()}.png`;
 }
 
-function getChampionIconUrl(championName: string) {
+function getChampionIconUrl(championName: string, iconVersion = '14.15.1') {
   const normalized = championName.replace(/\s/g, '').replace(/'/g, '');
-  return `https://ddragon.leagueoflegends.com/cdn/15.1.1/img/champion/${normalized}.png`;
+  return `https://ddragon.leagueoflegends.com/cdn/${iconVersion}/img/champion/${normalized}.png`;
 }
 
 const positionIcons: Record<string, string> = {
@@ -383,13 +383,13 @@ export function StatsClient({
                       <div className="player">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={getChampionIconUrl(c.championName)}
+                          src={getChampionIconUrl(c.championName, leaderboard.iconVersion)}
                           alt={c.championName}
                           className="tier-champ-icon"
                           style={{ width: '32px', height: '32px', borderRadius: '4px', border: '1px solid var(--border-gold)' }}
                           onError={(e) => {
                             (e.target as HTMLImageElement).src =
-                              'https://ddragon.leagueoflegends.com/cdn/15.1.1/img/champion/Aatrox.png';
+                              `https://ddragon.leagueoflegends.com/cdn/${leaderboard.iconVersion || '14.15.1'}/img/champion/Aatrox.png`;
                           }}
                         />
                         <span className="player-name" style={{ marginLeft: '10px' }}>{c.championName}</span>

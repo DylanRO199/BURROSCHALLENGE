@@ -319,7 +319,7 @@ function PlayerDetailDrawer({
 
   const getChampionIcon = (champName: string) => {
     const normalized = champName.replace(/\s/g, '').replace(/'/g, '');
-    return `https://ddragon.leagueoflegends.com/cdn/15.1.1/img/champion/${normalized}.png`;
+    return `https://ddragon.leagueoflegends.com/cdn/${iconVersion || '14.15.1'}/img/champion/${normalized}.png`;
   };
 
   return (
