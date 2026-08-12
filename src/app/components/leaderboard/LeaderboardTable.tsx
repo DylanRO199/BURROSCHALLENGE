@@ -99,7 +99,7 @@ export function LeaderboardTable({
               <>
                 <tr
                   key={player.riotId}
-                  className={`leaderboard-row ${podiumClass(player.position)} ${isExpanded ? 'active-expanded-parent' : ''} ${hasBlueShell ? 'blue-shell-row' : ''}`}
+                  className={`leaderboard-row ${podiumClass(player.position)} ${isExpanded ? 'active-expanded-parent' : ''}`}
                   onClick={() => setExpandedPlayerId(isExpanded ? null : player.riotId)}
                   title="Haz clic para ver el historial y detalles del jugador"
                 >
@@ -135,10 +135,6 @@ export function LeaderboardTable({
                         <div className="player-name-wrapper">
                           <span className="player-name">
                             {player.riotId}
-                            {player.hasBlueShell && (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src="/images/blue-shell.jpg" alt="Blue Shell" className="table-blue-shell-icon" title="¡Este jugador tiene un CAPARAZÓN AZUL activo!" />
-                            )}
                           </span>
                           <div className="player-badges" style={{ display: 'inline-flex', gap: '4px' }}>
                             <a
@@ -214,67 +210,10 @@ export function LeaderboardTable({
                       <span className="lp-loss" style={{ fontWeight: 700, color: '#ff4a4a', fontSize: '0.8rem' }}>▼ {player.stats.avgLpLoss ?? 30}</span>
                     </div>
                   </td>
-                  <td className="shells-cell hide-on-mobile-sm">
-                    <div className="shells-flex">
-                      {/* 1. Shield Badge */}
-                      {player.shieldHoursLeft !== null && (
-                        <div className="shell-badge shield-active" title={`Protegido por escudo. Expira en ${player.shieldHoursLeft}h.`}>
-                          <span className="shell-emoji">🛡️</span>
-                          <span className="shell-counter">{player.shieldHoursLeft}h</span>
-                        </div>
-                      )}
-
-                      {/* 2. Blue Shell Badge */}
-                      {player.blueShellCount > 0 && (
-                        <div className="shell-badge blue-shell-active-badge" title={`Atacado por ${player.blueShellCount} caparazón(es) azul(es).`}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src="/images/blue-shell.jpg" alt="Shell" className="mini-shell-icon" />
-                          <span className="shell-counter count-bubble">{player.blueShellCount}</span>
-                        </div>
-                      )}
-
-                      {/* 3. Punishments Badges */}
-                      {player.punishments.map((pun) => {
-                        let icon = '✴️';
-                        let title = 'Castigo Especial';
-                        let colorClass = 'special-punish';
-
-                        if (pun.id === 'no_boots') {
-                          icon = '🥾';
-                          title = 'Castigo: Prohibido comprar botas';
-                          colorClass = 'boots-punish';
-                        } else if (pun.id === 'no_flash') {
-                          icon = '⚡';
-                          title = 'Castigo: Prohibido usar Destello (Flash)';
-                          colorClass = 'flash-punish';
-                        } else if (pun.id === 'no_audio') {
-                          icon = '🔇';
-                          title = 'Castigo: Jugar sin audio en el juego';
-                          colorClass = 'audio-punish';
-                        } else if (pun.id === 'keyboard') {
-                          icon = '⌨️';
-                          title = 'Castigo: Jugar con teclas cambiadas / mano cambiada';
-                          colorClass = 'keys-punish';
-                        }
-
-                        return (
-                          <div key={pun.id} className={`shell-badge punishment-active-badge ${colorClass}`} title={`${title} - Partidas restantes: ${pun.gamesLeft}`}>
-                            <span className="shell-emoji">{icon}</span>
-                            <span className="shell-slash-overlay">/</span>
-                            <span className="shell-counter count-bubble punish-count">{pun.gamesLeft}</span>
-                          </div>
-                        );
-                      })}
-
-                      {player.shieldHoursLeft === null && player.blueShellCount === 0 && player.punishments.length === 0 && (
-                        <span className="shells-empty">—</span>
-                      )}
-                    </div>
-                  </td>
                 </tr>
                 {isExpanded && (
                   <tr className="expanded-row-container" key={`${player.riotId}-expanded`}>
-                    <td colSpan={13} className="expanded-td">
+                    <td colSpan={12} className="expanded-td">
                       <PlayerDetailDrawer player={player} opggUrl={opggUrl} iconVersion={iconVersion} />
                     </td>
                   </tr>
@@ -298,7 +237,7 @@ function PlayerDetailDrawer({
   opggUrl: string;
   iconVersion: string;
 }) {
-  const [activeTab, setActiveTab] = useState<'historial' | 'stats' | 'shells'>('historial');
+  const [activeTab, setActiveTab] = useState<'historial' | 'stats'>('historial');
 
   const timeSince = (dateStr: string) => {
     const pDate = new Date(dateStr).getTime();
@@ -337,12 +276,6 @@ function PlayerDetailDrawer({
             onClick={() => setActiveTab('stats')}
           >
             📊 Stats & Elo
-          </button>
-          <button
-            className={`drawer-tab-btn ${activeTab === 'shells' ? 'active' : ''}`}
-            onClick={() => setActiveTab('shells')}
-          >
-            🐚 Blue Shell {player.blueShellCount > 0 && `x${player.blueShellCount}`}
           </button>
         </div>
         <a href={opggUrl} target="_blank" rel="noopener noreferrer" className="lol-btn lol-btn-ghost drawer-opgg-btn">
@@ -488,82 +421,6 @@ function PlayerDetailDrawer({
                 {player.stats.topChampions.length === 0 && (
                   <p className="no-matches-msg">Aún no hay campeones más jugados.</p>
                 )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'shells' && (
-          <div className="shells-tab-content">
-            <div className="shells-grid-detail">
-              <div className="cooldown-box">
-                <h4>🛡️ Estado de Escudo</h4>
-                {player.shieldHoursLeft !== null ? (
-                  <div className="active-shield-detail animate-pulse">
-                    <span className="shield-huge-icon">🛡️</span>
-                    <div>
-                      <strong>Escudo Activo</strong>
-                      <p>Inmune a ataques de Caparazón Azul durante las próximas {player.shieldHoursLeft} horas.</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="inactive-shield-detail">
-                    <span className="shield-huge-icon disabled-shield">🛡️</span>
-                    <div>
-                      <strong>Sin Escudo</strong>
-                      <p>Vulnerable a ataques de Caparazón Azul.</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="cooldown-box">
-                <h4>🚫 Castigos y Penalizaciones Activas</h4>
-                <div className="punishments-detail-list">
-                  {player.punishments.map((pun) => {
-                    let title = 'Castigo Especial';
-                    let desc = 'Sujeto a las reglas de la administración.';
-                    let icon = '✴️';
-
-                    if (pun.id === 'no_boots') {
-                      title = 'Prohibido comprar botas';
-                      desc = 'Jugar sin botas en todo el transcurso de la partida.';
-                      icon = '🥾';
-                    } else if (pun.id === 'no_flash') {
-                      title = 'Prohibido usar Destello (Flash)';
-                      desc = 'Hechizo de Destello deshabilitado. Jugar con otros hechizos.';
-                      icon = '⚡';
-                    } else if (pun.id === 'no_audio') {
-                      title = 'Jugar sin audio';
-                      desc = 'Volumen del juego al 0%. Obligatorio jugar silenciado.';
-                      icon = '🔇';
-                    } else if (pun.id === 'keyboard') {
-                      title = 'Teclas / Mano cambiada';
-                      desc = 'Rotación o reasignación de configuración física de juego.';
-                      icon = '⌨️';
-                    }
-
-                    return (
-                      <div key={pun.id} className="punish-detail-item">
-                        <span className="p-icon">{icon}</span>
-                        <div className="p-meta">
-                          <strong>{title} ({pun.gamesLeft} part. restantes)</strong>
-                          <p>{desc}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {player.punishments.length === 0 && (
-                    <div className="no-punish-detail">
-                      <span className="p-ok-icon">🟢</span>
-                      <div>
-                        <strong>Ningún castigo activo</strong>
-                        <p>Este jugador está jugando limpio sin hándicaps temporales.</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           </div>

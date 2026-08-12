@@ -291,7 +291,6 @@ export function LeaderboardClient({
   const [positionChanges, setPositionChanges] = useState<Record<string, 'up' | 'down' | null>>({});
   const [message, setMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'tierlist'>('leaderboard');
-  const [showShellInfo, setShowShellInfo] = useState(false);
   
   const prevPlayersRef = useRef<LeaderboardDto['players']>(initialData.players);
 
@@ -515,16 +514,8 @@ export function LeaderboardClient({
               else if (player.position === 2) { podiumCls = 'second-place'; badgeIcon = '🥈'; }
               else if (player.position === 3) { podiumCls = 'third-place'; badgeIcon = '🥉'; }
 
-              const hasBlueShell = player.hasBlueShell;
-
               return (
-                <div key={player.riotId} className={`podium-card ${podiumCls} ${animClass} ${hasBlueShell ? 'blue-shell-active' : ''}`}>
-                  {hasBlueShell && (
-                    <div className="podium-blue-shell-indicator" title="¡Este jugador tiene un CAPARAZÓN AZUL activo!">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/images/blue-shell.jpg" alt="Blue Shell" className="blue-shell-icon-floating" />
-                    </div>
-                  )}
+                <div key={player.riotId} className={`podium-card ${podiumCls} ${animClass}`}>
                   <div className="podium-card-header">
                     <span className="podium-badge">{badgeIcon}</span>
                     <div className="podium-player-info">
@@ -617,102 +608,7 @@ export function LeaderboardClient({
         </section>
       )}
 
-      {/* 🐚 BLUE SHELL INFORMATION PANEL */}
-      <section className="blue-shell-info-section">
-        <button 
-          className="blue-shell-toggle-btn"
-          onClick={() => setShowShellInfo(!showShellInfo)}
-          aria-expanded={showShellInfo}
-        >
-          <span className="btn-flex">
-            <span className="btn-emoji">🐚</span>
-            <strong>REGLAMENTO DEL BLUE SHELL & CASTIGOS</strong>
-          </span>
-          <span className="toggle-chevron">{showShellInfo ? '▲ Ocultar' : '▼ Mostrar'}</span>
-        </button>
 
-        {showShellInfo && (
-          <div className="blue-shell-info-card animate-fade-in">
-            <div className="info-intro">
-              <p>El <strong>Blue Shell (Caparazón Azul)</strong> es una mecánica de sabotaje inspirada en <i>SoloQ Challenge</i>. Diseñada para incentivar la competitividad, permite a los jugadores penalizar a los rivales que lideran la tabla mediante desafíos especiales obligatorios en sus siguientes partidas clasificatorias.</p>
-            </div>
-
-            <div className="info-grid">
-              <div className="info-column">
-                <h3>🛡️ Escudos & Protección</h3>
-                <p>Un jugador puede activar un <strong>Escudo de Protección</strong> (ej. 🛡️ 11h). Mientras el escudo esté activo, el jugador es completamente inmune a los ataques de Caparazón Azul. La duración del escudo disminuye con el paso de las horas en tiempo real.</p>
-              </div>
-
-              <div className="info-column">
-                <h3>🐚 Caparazón Azul (Blue Shell)</h3>
-                <p>Representado por el icono del caparazón azul con pinchos y un contador. Si te lanzan un Caparazón Azul (ej. 🐚 1), el jugador objetivo será penalizado y deberá girar la <strong>Ruleta de la Mala Suerte</strong> para recibir un castigo aleatorio en sus siguientes juegos.</p>
-              </div>
-            </div>
-
-            <div className="info-rules-detail">
-              <div className="rules-block">
-                <h3>📈 ¿Cómo conseguir Caparazones y Escudos?</h3>
-                <ul>
-                  <li><strong>Hitos en Partida (In-Game)</strong>: Lograr una Pentakill en una partida de torneo otorga automáticamente 1 Caparazón Azul. Lograr una racha de 5 victorias consecutivas otorga 1 Escudo de Protección (8 horas).</li>
-                  <li><strong>Remontadas Legendarias</strong>: Ganar una partida que supere los 45 minutos de duración (donde el equipo estuvo por detrás en oro) otorga 1 Caparazón Azul como recompensa por resiliencia.</li>
-                  <li><strong>Récord Diario de LP</strong>: El jugador que logre la mayor subida neta de LP durante un día calendario recibe 1 Caparazón Azul para utilizar al día siguiente.</li>
-                  <li><strong>Dinámica de Moderación / Comunidad</strong>: Los administradores y la audiencia pueden sortear o asignar caparazones adicionales a través de predicciones o interacciones del chat.</li>
-                </ul>
-              </div>
-
-              <div className="rules-block">
-                <h3>🎮 ¿Cómo se utilizan los Caparazones?</h3>
-                <ul>
-                  <li><strong>Lanzamiento</strong>: Un jugador puede lanzar un caparazón a cualquier rival de la tabla que esté por encima de su posición actual (para recortar distancias) o a su elección.</li>
-                  <li><strong>La Penalización</strong>: Al recibir el caparazón, el administrador girará la ruleta de castigos. El jugador afectado deberá jugar sus siguientes partidas clasificatorias cumpliendo el hándicap (ej. sin botas, sin flash, etc.).</li>
-                  <li><strong>Evidencia</strong>: Para que la partida cuente y se retire el castigo, el jugador debe transmitir la partida por Discord/Twitch o enviar capturas detalladas del HUD e inventario al final de la partida para validar que cumplió con la restricción.</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="punishments-dictionary">
-              <h3>🚫 Catálogo de Castigos Disponibles</h3>
-              <div className="punish-grid">
-                <div className="punish-item">
-                  <span className="item-icon">🥾</span>
-                  <div>
-                    <strong>Prohibido comprar botas</strong>
-                    <p>El jugador no puede comprar ningún tipo de calzado en toda la partida. Deberá jugar a velocidad de movimiento base.</p>
-                  </div>
-                </div>
-                <div className="punish-item">
-                  <span className="item-icon">⚡</span>
-                  <div>
-                    <strong>Prohibido usar Destello (Flash)</strong>
-                    <p>El jugador no puede llevar el hechizo de invocador "Destello" (Flash) en sus hechizos. Deberá usar combinaciones como Teleport, Ignición, Extenuación o Fantasmal.</p>
-                  </div>
-                </div>
-                <div className="punish-item">
-                  <span className="item-icon">🔇</span>
-                  <div>
-                    <strong>Jugar sin audio</strong>
-                    <p>El jugador debe silenciar por completo el volumen de los efectos, alertas y música de League of Legends durante el juego.</p>
-                  </div>
-                </div>
-                <div className="punish-item">
-                  <span className="item-icon">⌨️</span>
-                  <div>
-                    <strong>Teclas cambiadas / Mano cambiada</strong>
-                    <p>El jugador debe jugar utilizando la mano contraria en el mouse, o rotar la configuración de asignación de teclas (ej. cambiar Q, W, E, R por otras menos cómodas).</p>
-                  </div>
-                </div>
-                <div className="punish-item">
-                  <span className="item-icon">✴️</span>
-                  <div>
-                    <strong>Castigo Especial / Ruleta</strong>
-                    <p>Un hándicap especial decidido por el administrador del torneo (ej. desactivar HUD, jugar en resolución 800x600, etc.).</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
 
       <VisitorCounter />
     </main>
