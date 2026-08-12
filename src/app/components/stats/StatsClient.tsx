@@ -47,6 +47,53 @@ const laneNames: Record<string, string> = {
   UTILITY: 'Support',
 };
 
+// ─── Position Wreath Badge Component for Stats ──────────────────────────────
+function PositionWreath({ position }: { position: number }) {
+  let wreathColor = '#3c424d'; // grey
+  let badgeIcon = '';
+  
+  if (position === 1) {
+    wreathColor = '#c8aa6e'; // gold
+    badgeIcon = '👑';
+  } else if (position === 2) {
+    wreathColor = '#a09b8c'; // silver
+  } else if (position === 3) {
+    wreathColor = '#cd7f32'; // bronze
+  }
+  
+  return (
+    <div className="position-wreath-wrap" style={{ position: 'relative', width: '38px', height: '38px', margin: '0 auto' }}>
+      <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', color: wreathColor }}>
+        <path d="M 32,72 C 16,58 16,38 32,24" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+        <path d="M 68,72 C 84,58 84,38 68,24" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+        <path d="M 23,62 C 16,58 18,52 24,55 Z" fill="currentColor" />
+        <path d="M 18,48 C 11,45 13,39 19,42 Z" fill="currentColor" />
+        <path d="M 20,34 C 14,30 17,24 23,28 Z" fill="currentColor" />
+        <path d="M 77,62 C 84,58 82,52 76,55 Z" fill="currentColor" />
+        <path d="M 82,48 C 89,45 87,39 81,42 Z" fill="currentColor" />
+        <path d="M 80,34 C 86,30 83,24 77,28 Z" fill="currentColor" />
+      </svg>
+      {badgeIcon && (
+        <span className="wreath-crown" style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px' }}>
+          {badgeIcon}
+        </span>
+      )}
+      <span className="wreath-number" style={{
+        position: 'absolute',
+        top: '52%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        fontSize: '0.8rem',
+        fontWeight: 800,
+        color: position <= 3 ? wreathColor : '#8890a6',
+        fontFamily: "'Cinzel', serif"
+      }}>
+        {position}
+      </span>
+    </div>
+  );
+}
+
 export function StatsClient({
   leaderboard,
   champions,
@@ -149,7 +196,7 @@ export function StatsClient({
             <polygon points="50,25 65,50 50,75 35,50" fill="currentColor" opacity="0.8" />
           </svg>
         </div>
-        <div className="region">ESTADÍSTICAS DEL TORNEO</div>
+        <div className="region">ESTADÍSTICAS GENERALES</div>
         <h1 className="lol-title">LÍDERES Y DATOS</h1>
         <div className="lol-divider">
           <span className="divider-line"></span>
@@ -186,10 +233,14 @@ export function StatsClient({
               <div className="leader-card">
                 <div className="leader-card-badge">KDA</div>
                 <div className="leader-card-title">El Imparable</div>
-                {leaders.imparable.profileIconUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={leaders.imparable.profileIconUrl} alt="" className="leader-avatar" />
-                )}
+                <div className="leader-avatar-wrapper-card">
+                  {leaders.imparable.profileIconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={leaders.imparable.profileIconUrl} alt="" className="leader-avatar" />
+                  ) : (
+                    <span className="leader-avatar-fallback">{leaders.imparable.riotId.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
                 <div className="leader-name">{leaders.imparable.riotId.split('#')[0]}</div>
                 <div className="leader-stat-val">{leaders.imparable.stats.kda.toFixed(2)}</div>
                 <div className="leader-stat-label">Ratio KDA</div>
@@ -199,10 +250,14 @@ export function StatsClient({
               <div className="leader-card">
                 <div className="leader-card-badge">PARTIDAS</div>
                 <div className="leader-card-title">El Grindeador</div>
-                {leaders.grindeador.profileIconUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={leaders.grindeador.profileIconUrl} alt="" className="leader-avatar" />
-                )}
+                <div className="leader-avatar-wrapper-card">
+                  {leaders.grindeador.profileIconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={leaders.grindeador.profileIconUrl} alt="" className="leader-avatar" />
+                  ) : (
+                    <span className="leader-avatar-fallback">{leaders.grindeador.riotId.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
                 <div className="leader-name">{leaders.grindeador.riotId.split('#')[0]}</div>
                 <div className="leader-stat-val">{leaders.grindeador.stats.games}</div>
                 <div className="leader-stat-label">Partidas Jugadas</div>
@@ -212,10 +267,14 @@ export function StatsClient({
               <div className="leader-card">
                 <div className="leader-card-badge">KILLS</div>
                 <div className="leader-card-title">El Verdugo</div>
-                {leaders.verdugo.profileIconUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={leaders.verdugo.profileIconUrl} alt="" className="leader-avatar" />
-                )}
+                <div className="leader-avatar-wrapper-card">
+                  {leaders.verdugo.profileIconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={leaders.verdugo.profileIconUrl} alt="" className="leader-avatar" />
+                  ) : (
+                    <span className="leader-avatar-fallback">{leaders.verdugo.riotId.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
                 <div className="leader-name">{leaders.verdugo.riotId.split('#')[0]}</div>
                 <div className="leader-stat-val">{leaders.verdugo.stats.averageKills.toFixed(1)}</div>
                 <div className="leader-stat-label">Kills por partida</div>
@@ -225,10 +284,14 @@ export function StatsClient({
               <div className="leader-card">
                 <div className="leader-card-badge">DEATHS</div>
                 <div className="leader-card-title">El Inmortal</div>
-                {leaders.inmortal.profileIconUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={leaders.inmortal.profileIconUrl} alt="" className="leader-avatar" />
-                )}
+                <div className="leader-avatar-wrapper-card">
+                  {leaders.inmortal.profileIconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={leaders.inmortal.profileIconUrl} alt="" className="leader-avatar" />
+                  ) : (
+                    <span className="leader-avatar-fallback">{leaders.inmortal.riotId.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
                 <div className="leader-name">{leaders.inmortal.riotId.split('#')[0]}</div>
                 <div className="leader-stat-val">{leaders.inmortal.stats.averageDeaths.toFixed(1)}</div>
                 <div className="leader-stat-label">Muertes por partida</div>
@@ -238,10 +301,14 @@ export function StatsClient({
               <div className="leader-card">
                 <div className="leader-card-badge">ASSISTS</div>
                 <div className="leader-card-title">El Escudero</div>
-                {leaders.escudero.profileIconUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={leaders.escudero.profileIconUrl} alt="" className="leader-avatar" />
-                )}
+                <div className="leader-avatar-wrapper-card">
+                  {leaders.escudero.profileIconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={leaders.escudero.profileIconUrl} alt="" className="leader-avatar" />
+                  ) : (
+                    <span className="leader-avatar-fallback">{leaders.escudero.riotId.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
                 <div className="leader-name">{leaders.escudero.riotId.split('#')[0]}</div>
                 <div className="leader-stat-val">{leaders.escudero.stats.averageAssists.toFixed(1)}</div>
                 <div className="leader-stat-label">Asistencias por partida</div>
@@ -251,10 +318,14 @@ export function StatsClient({
               <div className="leader-card">
                 <div className="leader-card-badge">RACHA</div>
                 <div className="leader-card-title">Sin Frenos</div>
-                {leaders.racha.profileIconUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={leaders.racha.profileIconUrl} alt="" className="leader-avatar" />
-                )}
+                <div className="leader-avatar-wrapper-card">
+                  {leaders.racha.profileIconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={leaders.racha.profileIconUrl} alt="" className="leader-avatar" />
+                  ) : (
+                    <span className="leader-avatar-fallback">{leaders.racha.riotId.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
                 <div className="leader-name">{leaders.racha.riotId.split('#')[0]}</div>
                 <div className="leader-stat-val">
                   {leaders.racha.stats.streakType === 'W' ? `${leaders.racha.stats.streak}🔥` : '0'}
@@ -275,6 +346,7 @@ export function StatsClient({
               <table>
                 <thead>
                   <tr>
+                    <th>Ranking</th>
                     <th>Invocador</th>
                     <th>Rol</th>
                     <th className="sortable-header" onClick={() => handleSort('games')}>
@@ -301,8 +373,14 @@ export function StatsClient({
                 <tbody>
                   {sortedPlayers.map((p) => {
                     const [name] = p.riotId.split('#');
+                    const totalGames = p.stats.wins + p.stats.losses;
+                    const winsPct = totalGames > 0 ? (p.stats.wins / totalGames) * 100 : 50;
+
                     return (
                       <tr key={p.riotId}>
+                        <td className="wreath-cell-column">
+                          <PositionWreath position={p.position} />
+                        </td>
                         <td>
                           <div className="player">
                             <div className="player-avatar-wrapper" title={p.isOnline ? "En partida" : "Desconectado"}>
@@ -334,8 +412,19 @@ export function StatsClient({
                           )}
                         </td>
                         <td>{p.stats.games}</td>
-                        <td className="lp" style={{ fontWeight: 'bold' }}>{p.stats.winRate}%</td>
-                        <td style={{ color: p.stats.kda >= 3 ? '#00f5a0' : 'inherit' }}>
+                        <td>
+                          <div className="winrate-progress-cell">
+                            <div className="winrate-text-header">
+                              <strong>{p.stats.winRate}%</strong>
+                              <span className="winrate-wl-breakdown">{p.stats.wins}V - {p.stats.losses}D</span>
+                            </div>
+                            <div className="winrate-proportion-bar">
+                              <div className="bar-wins" style={{ width: `${winsPct}%` }} />
+                              <div className="bar-losses" style={{ width: `${100 - winsPct}%` }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ color: p.stats.kda >= 3 ? '#00f5a0' : 'inherit', fontWeight: 700 }}>
                           {p.stats.kda.toFixed(2)}
                         </td>
                         <td>{p.stats.averageKills.toFixed(1)}</td>
@@ -377,36 +466,52 @@ export function StatsClient({
                 </tr>
               </thead>
               <tbody>
-                {sortedChampions.map((c) => (
-                  <tr key={c.championName}>
-                    <td>
-                      <div className="player">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={getChampionIconUrl(c.championName, leaderboard.iconVersion)}
-                          alt={c.championName}
-                          className="tier-champ-icon"
-                          style={{ width: '32px', height: '32px', borderRadius: '4px', border: '1px solid var(--border-gold)' }}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              `https://ddragon.leagueoflegends.com/cdn/${leaderboard.iconVersion || '14.15.1'}/img/champion/Aatrox.png`;
-                          }}
-                        />
-                        <span className="player-name" style={{ marginLeft: '10px' }}>{c.championName}</span>
-                      </div>
-                    </td>
-                    <td>{c.games}</td>
-                    <td style={{ color: 'var(--green-victory)' }}>{c.wins}</td>
-                    <td style={{ color: 'var(--red-defeat)' }}>{c.losses}</td>
-                    <td className="lp" style={{ fontWeight: 'bold' }}>{c.winRate}%</td>
-                    <td>{c.kda.toFixed(2)}</td>
-                    <td>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        {(c.kills / c.games).toFixed(1)} / {(c.deaths / c.games).toFixed(1)} / {(c.assists / c.games).toFixed(1)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {sortedChampions.map((c) => {
+                  const totalGames = c.games;
+                  const winsPct = totalGames > 0 ? (c.wins / totalGames) * 100 : 50;
+
+                  return (
+                    <tr key={c.championName}>
+                      <td>
+                        <div className="player">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={getChampionIconUrl(c.championName, leaderboard.iconVersion)}
+                            alt={c.championName}
+                            className="tier-champ-icon"
+                            style={{ width: '32px', height: '32px', borderRadius: '4px', border: '1px solid var(--border-gold)' }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                `https://ddragon.leagueoflegends.com/cdn/${leaderboard.iconVersion || '15.1.1'}/img/champion/Aatrox.png`;
+                            }}
+                          />
+                          <span className="player-name" style={{ marginLeft: '10px' }}>{c.championName}</span>
+                        </div>
+                      </td>
+                      <td>{c.games}</td>
+                      <td style={{ color: 'var(--green-victory)' }}>{c.wins}</td>
+                      <td style={{ color: 'var(--red-defeat)' }}>{c.losses}</td>
+                      <td>
+                        <div className="winrate-progress-cell">
+                          <div className="winrate-text-header">
+                            <strong>{c.winRate}%</strong>
+                            <span className="winrate-wl-breakdown">{c.wins}V - {c.losses}D</span>
+                          </div>
+                          <div className="winrate-proportion-bar">
+                            <div className="bar-wins" style={{ width: `${winsPct}%` }} />
+                            <div className="bar-losses" style={{ width: `${100 - winsPct}%` }} />
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ color: c.kda >= 3 ? '#00f5a0' : 'inherit', fontWeight: 700 }}>{c.kda.toFixed(2)}</td>
+                      <td>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                          {(c.kills / c.games).toFixed(1)} / {(c.deaths / c.games).toFixed(1)} / {(c.assists / c.games).toFixed(1)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {sortedChampions.length === 0 && (
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
