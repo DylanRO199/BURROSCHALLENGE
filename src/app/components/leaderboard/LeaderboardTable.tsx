@@ -1,6 +1,5 @@
 import type { LeaderboardDto } from '@/domain/leaderboard';
-import type { Rank } from '@/domain/types';
-import { RecentResults } from './RecentResults';
+import type { Rank, RecentMatchResult } from '@/domain/types';
 import { LiveBadge } from './LiveBadge';
 import { useState } from 'react';
 
@@ -54,6 +53,115 @@ const laneNames: Record<string, string> = {
   UTILITY: 'Soporte (Support)',
 };
 
+// ─── Position Wreath Badge Component ─────────────────────────────────────────
+function PositionWreath({ position }: { position: number }) {
+  let wreathColor = '#3c424d'; // grey
+  let badgeIcon = '';
+  
+  if (position === 1) {
+    wreathColor = '#c8aa6e'; // gold
+    badgeIcon = '👑';
+  } else if (position === 2) {
+    wreathColor = '#a09b8c'; // silver
+  } else if (position === 3) {
+    wreathColor = '#cd7f32'; // bronze
+  }
+  
+  return (
+    <div className="position-wreath-wrap" style={{ position: 'relative', width: '42px', height: '42px', margin: '0 auto' }}>
+      <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', color: wreathColor }}>
+        <path d="M 32,72 C 16,58 16,38 32,24" fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M 68,72 C 84,58 84,38 68,24" fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M 23,62 C 16,58 18,52 24,55 Z" fill="currentColor" />
+        <path d="M 18,48 C 11,45 13,39 19,42 Z" fill="currentColor" />
+        <path d="M 20,34 C 14,30 17,24 23,28 Z" fill="currentColor" />
+        <path d="M 77,62 C 84,58 82,52 76,55 Z" fill="currentColor" />
+        <path d="M 82,48 C 89,45 87,39 81,42 Z" fill="currentColor" />
+        <path d="M 80,34 C 86,30 83,24 77,28 Z" fill="currentColor" />
+      </svg>
+      {badgeIcon && (
+        <span className="wreath-crown" style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', fontSize: '11px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+          {badgeIcon}
+        </span>
+      )}
+      <span className="wreath-number" style={{
+        position: 'absolute',
+        top: '52%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        fontSize: '0.85rem',
+        fontWeight: 800,
+        color: position <= 3 ? wreathColor : '#8890a6',
+        fontFamily: "'Cinzel', serif"
+      }}>
+        {position}
+      </span>
+    </div>
+  );
+}
+
+// ─── Sparkline Component ─────────────────────────────────────────────────────
+function Sparkline({ results }: { results: RecentMatchResult[] }) {
+  if (!results || results.length === 0) {
+    return <span className="sparkline-empty">—</span>;
+  }
+  
+  // Chronological order (from oldest to newest)
+  const chronological = [...results].reverse();
+  
+  // Calculate relative LP points path
+  let currentLp = 100;
+  const points = [currentLp];
+  for (const m of chronological) {
+    if (m.result === 'W') {
+      currentLp += m.lpChange && m.lpChange > 0 ? m.lpChange : 20;
+    } else if (m.result === 'L') {
+      currentLp -= m.lpChange && m.lpChange > 0 ? m.lpChange : 15;
+    }
+    points.push(currentLp);
+  }
+  
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min === 0 ? 1 : max - min;
+  
+  const svgWidth = 100;
+  const svgHeight = 26;
+  const padding = 2;
+  
+  const scaledPoints = points.map((p, idx) => {
+    const x = padding + (idx / (points.length - 1)) * (svgWidth - padding * 2);
+    const y = padding + (1 - (p - min) / range) * (svgHeight - padding * 2);
+    return { x, y };
+  });
+  
+  let pathD = `M ${scaledPoints[0].x} ${scaledPoints[0].y}`;
+  for (let i = 1; i < scaledPoints.length; i++) {
+    pathD += ` L ${scaledPoints[i].x} ${scaledPoints[i].y}`;
+  }
+  
+  const isUp = points[points.length - 1] >= points[0];
+  const strokeColor = isUp ? 'var(--green-victory)' : 'var(--red-defeat)';
+  const gradientId = `sparkline-grad-${Math.random().toString(36).substr(2, 9)}`;
+  const areaD = `${pathD} L ${scaledPoints[scaledPoints.length - 1].x} ${svgHeight} L ${scaledPoints[0].x} ${svgHeight} Z`;
+  
+  return (
+    <div className="sparkline-container" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+      <svg width={svgWidth} height={svgHeight} style={{ overflow: 'visible' }}>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={strokeColor} stopOpacity="0.22" />
+            <stop offset="100%" stopColor={strokeColor} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaD} fill={`url(#${gradientId})`} />
+        <path d={pathD} fill="none" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={scaledPoints[scaledPoints.length - 1].x} cy={scaledPoints[scaledPoints.length - 1].y} r="2" fill={strokeColor} />
+      </svg>
+    </div>
+  );
+}
+
 export function LeaderboardTable({
   players,
   iconVersion,
@@ -75,16 +183,13 @@ export function LeaderboardTable({
             <th>Pos.</th>
             <th>Jugador</th>
             <th className="hide-on-mobile">Rol</th>
-            <th>Rango</th>
-            <th>LP</th>
-            <th className="hide-on-mobile">Diario</th>
-            <th className="hide-on-mobile">V / D</th>
+            <th>Rango & LP</th>
             <th className="hide-on-mobile">Win rate</th>
+            <th>Tendencia</th>
+            <th>Diario</th>
             <th className="hide-on-mobile">KDA</th>
             <th className="hide-on-mobile">Racha</th>
-            <th className="hide-on-mobile">Últimas</th>
             <th className="hide-on-mobile">±LP</th>
-            <th className="hide-on-mobile-sm">Shells</th>
           </tr>
         </thead>
         <tbody>
@@ -93,7 +198,9 @@ export function LeaderboardTable({
               player.riotId.replace('#', '-')
             )}`;
             const isExpanded = expandedPlayerId === player.riotId;
-            const hasBlueShell = player.hasBlueShell;
+            
+            const totalGames = player.stats.wins + player.stats.losses;
+            const winsPct = totalGames > 0 ? (player.stats.wins / totalGames) * 100 : 50;
 
             return (
               <>
@@ -103,27 +210,13 @@ export function LeaderboardTable({
                   onClick={() => setExpandedPlayerId(isExpanded ? null : player.riotId)}
                   title="Haz clic para ver el historial y detalles del jugador"
                 >
-                  <td className={`position ${podiumClass(player.position)}`}>
-                    <div className="pos-cell">
-                      <span className="pos-number">{player.position}</span>
-                      <span
-                        className={`pos-change ${
-                          player.positionChange > 0 ? 'up' : player.positionChange < 0 ? 'down' : 'same'
-                        }`}
-                      >
-                        {player.positionChange > 0
-                          ? `▲${player.positionChange}`
-                          : player.positionChange < 0
-                          ? `▼${Math.abs(player.positionChange)}`
-                          : '='}
-                      </span>
-                    </div>
+                  <td className="wreath-cell-column">
+                    <PositionWreath position={player.position} />
                   </td>
                   <td>
                     <div className="player">
                       <div className="player-avatar-wrapper">
                         {player.profileIconUrl ? (
-                          // Data Dragon is an external Riot CDN, so Next Image optimization is not required here.
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={player.profileIconUrl} alt="" />
                         ) : (
@@ -176,11 +269,28 @@ export function LeaderboardTable({
                         alt={player.rank.tier}
                         className="rank-icon"
                       />
-                      <span>{rankLabel(player.rank)}</span>
+                      <div className="rank-text-meta">
+                        <span className="rank-tier-name">{rankLabel(player.rank)}</span>
+                        <span className="rank-lp-value">{player.rank.leaguePoints} LP</span>
+                      </div>
                     </div>
                   </td>
-                  <td className="lp">{player.rank.leaguePoints}</td>
-                  <td className="daily-lp hide-on-mobile">
+                  <td className="hide-on-mobile">
+                    <div className="winrate-progress-cell">
+                      <div className="winrate-text-header">
+                        <strong>{player.stats.winRate}%</strong>
+                        <span className="winrate-wl-breakdown">{player.stats.wins}V - {player.stats.losses}D</span>
+                      </div>
+                      <div className="winrate-proportion-bar">
+                        <div className="bar-wins" style={{ width: `${winsPct}%` }} />
+                        <div className="bar-losses" style={{ width: `${100 - winsPct}%` }} />
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <Sparkline results={player.stats.recentResults} />
+                  </td>
+                  <td className="daily-lp">
                     <div className="daily-lp-cell">
                       <div className="daily-lp-vals">
                         <span className="lp-gain">▲ {player.stats.dailyGainedLp ?? 0}</span>
@@ -192,17 +302,15 @@ export function LeaderboardTable({
                     </div>
                   </td>
                   <td className="hide-on-mobile">
-                    {player.stats.wins} / {player.stats.losses}
+                    <div className="kda-display-cell">
+                      <strong>{player.stats.kda.toFixed(2)}</strong>
+                      <span>{player.stats.averageKills.toFixed(1)} / {player.stats.averageDeaths.toFixed(1)} / {player.stats.averageAssists.toFixed(1)}</span>
+                    </div>
                   </td>
-                  <td className="hide-on-mobile">{player.stats.winRate}%</td>
-                  <td className="hide-on-mobile">{player.stats.kda.toFixed(2)}</td>
                   <td className="hide-on-mobile">
                     {player.stats.streakType
                       ? `${player.stats.streak}${player.stats.streakType}`
                       : '—'}
-                  </td>
-                  <td className="hide-on-mobile">
-                    <RecentResults results={player.stats.recentResults} />
                   </td>
                   <td className="hide-on-mobile">
                     <div className="avg-lp-cell" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }} title="Promedio de LP ganado y perdido por partida">
@@ -213,7 +321,7 @@ export function LeaderboardTable({
                 </tr>
                 {isExpanded && (
                   <tr className="expanded-row-container" key={`${player.riotId}-expanded`}>
-                    <td colSpan={12} className="expanded-td">
+                    <td colSpan={11} className="expanded-td">
                       <PlayerDetailDrawer player={player} opggUrl={opggUrl} iconVersion={iconVersion} />
                     </td>
                   </tr>

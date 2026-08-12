@@ -2471,3 +2471,106 @@ tbody tr:hover { background: rgba(200, 170, 110, 0.06); }
     display: none !important;
   }
 }
+
+/* ─── Leaderboard Redesign Styles (SoloQChallenge Clone) ─── */
+
+/* Position Laurel Wreath styling */
+.wreath-cell-column {
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px 0;
+  width: 60px;
+}
+.position-wreath-wrap svg {
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+/* Rank column metadata styling */
+.rank-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rank-text-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.rank-tier-name {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+}
+.rank-lp-value {
+  color: var(--text-bright);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* Win Rate Proportional Bar cell */
+.winrate-progress-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 140px;
+  padding: 4px 0;
+}
+.winrate-text-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.82rem;
+}
+.winrate-text-header strong {
+  color: var(--text-bright);
+}
+.winrate-wl-breakdown {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+.winrate-proportion-bar {
+  display: flex;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+.bar-wins {
+  background: var(--green-victory);
+  box-shadow: 0 0 4px var(--green-victory);
+  height: 100%;
+}
+.bar-losses {
+  background: var(--red-defeat);
+  box-shadow: 0 0 4px var(--red-defeat);
+  height: 100%;
+}
+
+/* SVG Sparkline Container styling */
+.sparkline-container {
+  padding: 4px 0;
+  min-height: 30px;
+}
+.sparkline-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* KDA compact display cell */
+.kda-display-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  font-size: 0.82rem;
+}
+.kda-display-cell strong {
+  color: var(--text-bright);
+}
+.kda-display-cell span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
