@@ -74,17 +74,17 @@ export function LeaderboardTable({
           <tr>
             <th>Pos.</th>
             <th>Jugador</th>
-            <th>Rol</th>
+            <th className="hide-on-mobile">Rol</th>
             <th>Rango</th>
             <th>LP</th>
-            <th>Diario</th>
-            <th>V / D</th>
-            <th>Win rate</th>
-            <th>KDA</th>
-            <th>Racha</th>
-            <th>Últimas</th>
-            <th>±LP</th>
-            <th>Shells</th>
+            <th className="hide-on-mobile">Diario</th>
+            <th className="hide-on-mobile">V / D</th>
+            <th className="hide-on-mobile">Win rate</th>
+            <th className="hide-on-mobile">KDA</th>
+            <th className="hide-on-mobile">Racha</th>
+            <th className="hide-on-mobile">Últimas</th>
+            <th className="hide-on-mobile">±LP</th>
+            <th className="hide-on-mobile-sm">Shells</th>
           </tr>
         </thead>
         <tbody>
@@ -158,7 +158,7 @@ export function LeaderboardTable({
                       </div>
                     </div>
                   </td>
-                  <td className="lane-cell">
+                  <td className="lane-cell hide-on-mobile">
                     {player.stats.topLane && positionIcons[player.stats.topLane] ? (
                       <div className="lane-icon-wrap" title={laneNames[player.stats.topLane]}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -184,7 +184,7 @@ export function LeaderboardTable({
                     </div>
                   </td>
                   <td className="lp">{player.rank.leaguePoints}</td>
-                  <td className="daily-lp">
+                  <td className="daily-lp hide-on-mobile">
                     <div className="daily-lp-cell">
                       <div className="daily-lp-vals">
                         <span className="lp-gain">▲ {player.stats.dailyGainedLp ?? 0}</span>
@@ -195,26 +195,26 @@ export function LeaderboardTable({
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td className="hide-on-mobile">
                     {player.stats.wins} / {player.stats.losses}
                   </td>
-                  <td>{player.stats.winRate}%</td>
-                  <td>{player.stats.kda.toFixed(2)}</td>
-                  <td>
+                  <td className="hide-on-mobile">{player.stats.winRate}%</td>
+                  <td className="hide-on-mobile">{player.stats.kda.toFixed(2)}</td>
+                  <td className="hide-on-mobile">
                     {player.stats.streakType
                       ? `${player.stats.streak}${player.stats.streakType}`
                       : '—'}
                   </td>
-                  <td>
+                  <td className="hide-on-mobile">
                     <RecentResults results={player.stats.recentResults} />
                   </td>
-                  <td>
+                  <td className="hide-on-mobile">
                     <div className="avg-lp-cell" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }} title="Promedio de LP ganado y perdido por partida">
                       <span className="lp-gain" style={{ fontWeight: 700, color: '#00f5a0', fontSize: '0.8rem' }}>▲ {player.stats.avgLpGain ?? 30}</span>
                       <span className="lp-loss" style={{ fontWeight: 700, color: '#ff4a4a', fontSize: '0.8rem' }}>▼ {player.stats.avgLpLoss ?? 30}</span>
                     </div>
                   </td>
-                  <td className="shells-cell">
+                  <td className="shells-cell hide-on-mobile-sm">
                     <div className="shells-flex">
                       {/* 1. Shield Badge */}
                       {player.shieldHoursLeft !== null && (

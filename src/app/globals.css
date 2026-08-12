@@ -2460,10 +2460,14 @@ tbody tr:hover { background: rgba(200, 170, 110, 0.06); }
   object-fit: cover;
   display: block;
 }
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
 
-
-
-
-
-
-
+@media (max-width: 480px) {
+  .hide-on-mobile-sm {
+    display: none !important;
+  }
+}
