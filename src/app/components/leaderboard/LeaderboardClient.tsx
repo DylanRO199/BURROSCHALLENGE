@@ -411,7 +411,7 @@ export function LeaderboardClient({
   // 3. Rank LP ping — updates LP/tier/W/L for ALL players every 30s (fast, no match history)
   const rankRef = useRef(false);
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const triggerRankCheck = async () => {
       if (rankRef.current) return;
       rankRef.current = true;
       try {
@@ -424,6 +424,13 @@ export function LeaderboardClient({
       } catch { /* silent */ } finally {
         rankRef.current = false;
       }
+    };
+
+    // Trigger immediately on page load
+    void triggerRankCheck();
+
+    const interval = setInterval(() => {
+      void triggerRankCheck();
     }, 60000);
     return () => clearInterval(interval);
   }, []);

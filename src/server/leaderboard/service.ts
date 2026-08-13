@@ -85,8 +85,43 @@ export function createLeaderboardService({
 
 			const iconVersion = typeof getIconVersion === 'function' ? await getIconVersion() : (getIconVersion as string);
 
-			const todaySantiago = new Date(now().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
-			todaySantiago.setHours(0, 0, 0, 0);
+			// Calculate the start of the day (midnight 00:00:00) in Santiago (Chile) timezone
+			let todaySantiago: Date;
+			try {
+				const santiagoDateStr = now().toLocaleDateString('en-US', {
+					timeZone: 'America/Santiago',
+					year: 'numeric',
+					month: '2-digit',
+					day: '2-digit'
+				});
+				const [m, d, y] = santiagoDateStr.split('/');
+				const dateIso = `${y}-${m}-${d}`;
+				const tempUtc = new Date(`${dateIso}T00:00:00Z`);
+				const santiagoParts = new Intl.DateTimeFormat('en-US', {
+					timeZone: 'America/Santiago',
+					year: 'numeric',
+					month: '2-digit',
+					day: '2-digit',
+					hour: '2-digit',
+					minute: '2-digit',
+					second: '2-digit',
+					hour12: false
+				}).format(tempUtc);
+				const match = santiagoParts.match(/(\d+)\/(\d+)\/(\d+),\s+(\d+):(\d+):(\d+)/);
+				if (match) {
+					const [, sm, sd, sy, sh, sMin, ss] = match;
+					const localTimeValue = new Date(Date.UTC(Number(sy), Number(sm) - 1, Number(sd), Number(sh), Number(sMin), Number(ss))).getTime();
+					const offsetMs = localTimeValue - tempUtc.getTime();
+					const localMidnightMs = Date.UTC(Number(y), Number(m) - 1, Number(d), 0, 0, 0);
+					todaySantiago = new Date(localMidnightMs - offsetMs);
+				} else {
+					throw new Error('Formato de fecha inválido');
+				}
+			} catch (e) {
+				console.warn('⚠️ Error al calcular start of day Santiago, cayendo a local date:', e);
+				todaySantiago = new Date(now().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+				todaySantiago.setHours(0, 0, 0, 0);
+			}
 
 			const playerDtos = await Promise.all(
 				players.map(async (p: any) => {
