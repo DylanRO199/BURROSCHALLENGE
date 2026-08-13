@@ -35,5 +35,6 @@ export type LeaderboardDto = {
     blueShellCount: number;
     shieldHoursLeft: number | null;
     punishments: Array<{ id: string; gamesLeft: number }>;
+    serverRank: number | null;
   }>;
 };

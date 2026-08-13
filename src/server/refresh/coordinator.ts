@@ -61,6 +61,30 @@ export function createRefreshCoordinator({
               grandmasterCutoff,
               lastCutoffFetchedAt: now(),
             });
+
+            // Sort entries to find the exact server rank indices for players
+            const sortedChallenger = (challengerData?.entries || []).sort((a: any, b: any) => b.leaguePoints - a.leaguePoints);
+            const sortedGrandmaster = (grandmasterData?.entries || []).sort((a: any, b: any) => b.leaguePoints - a.leaguePoints);
+            
+            const dbPlayers = await repository.getPlayers();
+            for (const p of dbPlayers) {
+              if (!p.summonerId) continue;
+              
+              let serverRank: number | null = null;
+              
+              const chalIdx = sortedChallenger.findIndex((e: any) => e.summonerId === p.summonerId);
+              if (chalIdx !== -1) {
+                serverRank = chalIdx + 1;
+              } else {
+                const gmIdx = sortedGrandmaster.findIndex((e: any) => e.summonerId === p.summonerId);
+                if (gmIdx !== -1) {
+                  serverRank = sortedChallenger.length + gmIdx + 1;
+                }
+              }
+              
+              console.log(`Server rank for ${p.riotId}: ${serverRank ? `TOP ${serverRank}` : 'Master/below'}`);
+              await repository.updatePlayerServerRank(p.id, serverRank);
+            }
           } catch (cutoffErr) {
             console.error('⚠️ No se pudieron obtener los cortes de ligas de Riot:', cutoffErr);
           }

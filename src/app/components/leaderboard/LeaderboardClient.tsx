@@ -620,7 +620,12 @@ export function LeaderboardClient({
             <h2>CLASIFICACIÓN</h2>
             <span>{data.players.length} participantes</span>
           </div>
-          <LeaderboardTable players={data.players} iconVersion={data.iconVersion} />
+          <LeaderboardTable
+            players={data.players}
+            iconVersion={data.iconVersion}
+            challengerCutoff={data.tournament.challengerCutoff}
+            grandmasterCutoff={data.tournament.grandmasterCutoff}
+          />
         </section>
       )}
 

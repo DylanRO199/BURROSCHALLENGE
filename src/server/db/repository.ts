@@ -145,6 +145,13 @@ export class DrizzleLeaderboardRepository {
       .where(eq(players.id, playerId));
   }
 
+  async updatePlayerServerRank(playerId: string, serverRank: number | null) {
+    await db
+      .update(players)
+      .set({ serverRank })
+      .where(eq(players.id, playerId));
+  }
+
   async updatePlayerLastRefreshed(playerId: string, observedAt: Date) {
     await db
       .update(players)

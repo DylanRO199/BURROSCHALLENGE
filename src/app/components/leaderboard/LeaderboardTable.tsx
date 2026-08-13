@@ -162,12 +162,92 @@ function Sparkline({ results }: { results: RecentMatchResult[] }) {
   );
 }
 
+// ─── Rank Hover Details Sub-Panel Component ─────────────────────────────────
+function RankHoverPanel({
+  player,
+  challengerCutoff,
+  grandmasterCutoff,
+}: {
+  player: LeaderboardDto['players'][0];
+  challengerCutoff: number;
+  grandmasterCutoff: number;
+}) {
+  const tier = player.rank.tier;
+  const lp = player.rank.leaguePoints;
+  const serverRank = player.serverRank;
+  
+  let targetTierName = 'Grandmaster';
+  let targetLp = grandmasterCutoff;
+  let lpDiff = lp - targetLp;
+  let progressPct = 0;
+  
+  if (tier === 'CHALLENGER') {
+    targetTierName = 'Challenger';
+    targetLp = challengerCutoff;
+    lpDiff = 0;
+    progressPct = 100;
+  } else if (tier === 'GRANDMASTER') {
+    targetTierName = 'Challenger';
+    targetLp = challengerCutoff;
+    lpDiff = lp - challengerCutoff;
+    const range = challengerCutoff - grandmasterCutoff;
+    progressPct = Math.min(100, Math.max(0, ((lp - grandmasterCutoff) / (range || 1)) * 100));
+  } else if (tier === 'MASTER') {
+    targetTierName = 'Grandmaster';
+    targetLp = grandmasterCutoff;
+    lpDiff = lp - grandmasterCutoff;
+    progressPct = Math.min(100, Math.max(0, (lp / (grandmasterCutoff || 1)) * 100));
+  } else {
+    targetTierName = 'Siguiente División';
+    targetLp = 100;
+    lpDiff = lp - 100;
+    progressPct = Math.min(100, Math.max(0, lp));
+  }
+  
+  const diffText = lpDiff >= 0 ? `+${lpDiff} LP` : `${lpDiff} LP`;
+  
+  return (
+    <div className="rank-hover-panel">
+      <div className="hover-panel-title">
+        {targetTierName} - {targetLp} LP
+      </div>
+      <div className="hover-panel-meta">
+        {serverRank ? (
+          <span className="hover-panel-server-rank">TOP {serverRank}</span>
+        ) : (
+          <span className="hover-panel-server-rank no-rank-tag">LAS</span>
+        )}
+        <span className="hover-panel-diff-lp" style={{ color: lpDiff >= 0 ? '#00f5a0' : '#ffbe4a' }}>
+          {diffText} {tier !== 'CHALLENGER' && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={getRankIconUrl(targetTierName.toUpperCase())} alt="" className="diff-tier-mini-icon" />
+          )}
+        </span>
+      </div>
+      
+      <div className="hover-panel-progress-track">
+        <div className="hover-panel-progress-bar" style={{ width: `${progressPct}%` }} />
+      </div>
+      
+      {tier !== 'CHALLENGER' && (
+        <div className="hover-panel-corte-label">
+          corte {targetLp} LP
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LeaderboardTable({
   players,
   iconVersion,
+  challengerCutoff,
+  grandmasterCutoff,
 }: {
   players: LeaderboardDto['players'];
   iconVersion: string;
+  challengerCutoff: number;
+  grandmasterCutoff: number;
 }) {
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
 
@@ -262,17 +342,20 @@ export function LeaderboardTable({
                     )}
                   </td>
                   <td className="rank">
-                    <div className="rank-cell">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={getRankIconUrl(player.rank.tier)}
-                        alt={player.rank.tier}
-                        className="rank-icon"
-                      />
-                      <div className="rank-text-meta">
-                        <span className="rank-tier-name">{rankLabel(player.rank)}</span>
-                        <span className="rank-lp-value">{player.rank.leaguePoints} LP</span>
+                    <div className="rank-cell-wrapper">
+                      <div className="rank-cell">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={getRankIconUrl(player.rank.tier)}
+                          alt={player.rank.tier}
+                          className="rank-icon"
+                        />
+                        <div className="rank-text-meta">
+                          <span className="rank-tier-name">{rankLabel(player.rank)}</span>
+                          <span className="rank-lp-value">{player.rank.leaguePoints} LP</span>
+                        </div>
                       </div>
+                      <RankHoverPanel player={player} challengerCutoff={challengerCutoff} grandmasterCutoff={grandmasterCutoff} />
                     </div>
                   </td>
                   <td className="hide-on-mobile">
