@@ -340,6 +340,9 @@ export function LeaderboardClient({
     }));
 
     try {
+      // Force rank update to get latest LP for all players immediately
+      await fetch('/api/leaderboard/rank?force=true', { method: 'POST' });
+
       const refreshResponse = await fetch('/api/leaderboard/refresh', { method: 'POST' });
       if (!refreshResponse.ok) throw new Error('Falló la actualización');
 
@@ -431,7 +434,7 @@ export function LeaderboardClient({
 
     const interval = setInterval(() => {
       void triggerRankCheck();
-    }, 60000);
+    }, 35000);
     return () => clearInterval(interval);
   }, []);
 

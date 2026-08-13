@@ -17,18 +17,21 @@ export const dynamic = 'force-dynamic';
  * Does NOT fetch match history for everyone — but triggers match history refresh
  * immediately and exclusively for players whose LP just changed.
  */
-export async function POST() {
+export async function POST(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const force = searchParams.get('force') === 'true';
+
     const repository = new DrizzleLeaderboardRepository();
     const tournamentId = 'soloq-challenge';
 
     // Check cooldown to protect Riot API Key from 429
     const tournament = await repository.getTournament();
     const now = new Date();
-    if (tournament?.lastRankAttemptedAt) {
+    if (!force && tournament?.lastRankAttemptedAt) {
       const elapsedMs = now.getTime() - tournament.lastRankAttemptedAt.getTime();
-      if (elapsedMs < 60000) {
-        console.log(`⏱️ Rank ping skipped (cooldown active: ${Math.round(elapsedMs / 1000)}s / 60s)`);
+      if (elapsedMs < 30000) {
+        console.log(`⏱️ Rank ping skipped (cooldown active: ${Math.round(elapsedMs / 1000)}s / 30s)`);
         return NextResponse.json({ success: true, cached: true });
       }
     }
