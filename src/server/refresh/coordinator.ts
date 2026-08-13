@@ -35,6 +35,37 @@ export function createRefreshCoordinator({
       });
 
       try {
+        // Check if cutoffs need to be updated (every 6 hours)
+        const sixHoursMs = 6 * 60 * 60 * 1000;
+        const lastCutoffTime = tournament.lastCutoffFetchedAt ? new Date(tournament.lastCutoffFetchedAt).getTime() : 0;
+        if (!tournament.lastCutoffFetchedAt || now().getTime() - lastCutoffTime > sixHoursMs) {
+          try {
+            console.log('⏳ Refrescando puntos de corte (cutoffs) de Challenger/GM...');
+            const platform = players[0]?.platform || 'la2';
+            
+            const [challengerData, grandmasterData] = await Promise.all([
+              riot.getChallengerLeague(platform),
+              riot.getGrandmasterLeague(platform),
+            ]);
+            
+            const challengerPoints = challengerData?.entries?.map((e: any) => e.leaguePoints) || [];
+            const challengerCutoff = challengerPoints.length > 0 ? Math.min(...challengerPoints) : 2000;
+            
+            const grandmasterPoints = grandmasterData?.entries?.map((e: any) => e.leaguePoints) || [];
+            const grandmasterCutoff = grandmasterPoints.length > 0 ? Math.min(...grandmasterPoints) : 1500;
+            
+            console.log(`✅ Nuevos cortes - Challenger: ${challengerCutoff} LP, Grandmaster: ${grandmasterCutoff} LP`);
+            
+            await repository.updateTournament(tournamentId, {
+              challengerCutoff,
+              grandmasterCutoff,
+              lastCutoffFetchedAt: now(),
+            });
+          } catch (cutoffErr) {
+            console.error('⚠️ No se pudieron obtener los cortes de ligas de Riot:', cutoffErr);
+          }
+        }
+
         // Sync active players in DB with config players
         const dbPlayersBefore = await repository.getPlayers();
         const configRiotIds = new Set(players.map((p) => p.riotId));

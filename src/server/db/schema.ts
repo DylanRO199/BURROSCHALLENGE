@@ -31,6 +31,9 @@ export const tournaments = pgTable('tournaments', {
   lastSpectatorAttemptedAt: timestamp('last_spectator_attempted_at', { withTimezone: true, mode: 'date' }),
   lastRankAttemptedAt: timestamp('last_rank_attempted_at', { withTimezone: true, mode: 'date' }),
   refreshStatus: refreshStatusEnum('refresh_status').notNull().default('idle'),
+  challengerCutoff: integer('challenger_cutoff').notNull().default(2000),
+  grandmasterCutoff: integer('grandmaster_cutoff').notNull().default(1500),
+  lastCutoffFetchedAt: timestamp('last_cutoff_fetched_at', { withTimezone: true, mode: 'date' }),
 });
 
 export const players = pgTable(

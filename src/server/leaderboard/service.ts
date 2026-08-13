@@ -373,6 +373,8 @@ export function createLeaderboardService({
 					name: config.name,
 					startsAt: config.startsAt ?? null,
 					endsAt: config.endsAt ?? null,
+					challengerCutoff: tournament?.challengerCutoff ?? 2000,
+					grandmasterCutoff: tournament?.grandmasterCutoff ?? 1500,
 				},
 				refresh: {
 					status: refreshStatus,

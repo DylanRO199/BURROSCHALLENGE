@@ -436,6 +436,14 @@ export function LeaderboardClient({
     return () => clearInterval(interval);
   }, [refresh]);
 
+  // 5. Auto refresh on mount if data is stale (more than 5 minutes old)
+  useEffect(() => {
+    if (data.refresh.stale) {
+      console.log('Mount check: data is stale. Running background refresh...');
+      void refresh();
+    }
+  }, [data.refresh.stale, refresh]);
+
   const updatedAt = data.refresh.lastSuccessfulAt
     ? new Intl.DateTimeFormat('es-CL', {
         dateStyle: 'short',
@@ -491,6 +499,24 @@ export function LeaderboardClient({
         </div>
 
         {message && <p className="lol-error-msg">{message}</p>}
+
+        <div className="cutoff-widget-container" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+          <div className="cutoff-widget">
+            <span className="cutoff-title">CUTOFF</span>
+            <div className="cutoff-item" title="Puntos mínimos de Challenger en LAS">
+              <img src={getRankIconUrl('CHALLENGER')} alt="" className="cutoff-icon" />
+              <span className="cutoff-val">
+                <strong>{data.tournament.challengerCutoff}</strong> <span className="cutoff-lp-text">LP</span>
+              </span>
+            </div>
+            <div className="cutoff-item" title="Puntos mínimos de Grandmaster en LAS">
+              <img src={getRankIconUrl('GRANDMASTER')} alt="" className="cutoff-icon" />
+              <span className="cutoff-val">
+                <strong>{data.tournament.grandmasterCutoff}</strong> <span className="cutoff-lp-text">LP</span>
+              </span>
+            </div>
+          </div>
+        </div>
       </header>
 
       {data.players.length > 0 && (

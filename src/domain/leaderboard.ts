@@ -11,6 +11,8 @@ export type LeaderboardDto = {
     name: string;
     startsAt: string | null;
     endsAt: string | null;
+    challengerCutoff: number;
+    grandmasterCutoff: number;
   };
   refresh: {
     status: PublicRefreshStatus;

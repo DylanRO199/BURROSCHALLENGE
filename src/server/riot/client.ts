@@ -88,4 +88,14 @@ export class RiotClient {
     const url = `https://${platform}.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/${encodeURIComponent(puuid)}`;
     return this.fetch(url, 1, false); // Spectator is non-critical, fail fast on 429
   }
+
+  async getChallengerLeague(platform: string) {
+    const url = `https://${platform}.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5`;
+    return this.fetch(url, 1, false);
+  }
+
+  async getGrandmasterLeague(platform: string) {
+    const url = `https://${platform}.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/RANKED_SOLO_5x5`;
+    return this.fetch(url, 1, false);
+  }
 }

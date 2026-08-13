@@ -16,6 +16,9 @@ export class DrizzleLeaderboardRepository {
       lastAttemptedAt?: Date;
       lastSuccessfulAt?: Date;
       refreshStatus?: 'idle' | 'refreshing' | 'temporary_error' | 'riot_api_key_invalid';
+      challengerCutoff?: number;
+      grandmasterCutoff?: number;
+      lastCutoffFetchedAt?: Date;
     }
   ) {
     await db.update(tournaments).set(data).where(eq(tournaments.id, id));

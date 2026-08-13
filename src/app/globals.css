@@ -2574,3 +2574,58 @@ tbody tr:hover { background: rgba(200, 170, 110, 0.06); }
   color: var(--text-muted);
   font-size: 0.72rem;
 }
+
+/* Cutoff Widget Styles (cloned from soloqchallenge.gg) */
+.cutoff-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 10px 20px;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.cutoff-title {
+  color: #8890a6;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  font-family: var(--font-cinzel), serif;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding-right: 14px;
+}
+
+.cutoff-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cutoff-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.cutoff-val {
+  color: #a3b0cf;
+  font-size: 0.9rem;
+}
+
+.cutoff-val strong {
+  color: var(--text-bright);
+  font-weight: 700;
+}
+
+.cutoff-lp-text {
+  color: #5d677a;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
