@@ -2762,4 +2762,54 @@ tbody tr:hover { background: rgba(200, 170, 110, 0.06); }
   }
 }
 
+/* Aegis Column & Badge styling (cloned from soloqchallenge.gg) */
+.aegis-cell-data {
+  padding: 10px 8px;
+  vertical-align: middle;
+}
+
+.aegis-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+}
+
+.aegis-icon {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 2px 5px rgba(255, 190, 74, 0.45));
+  animation: aegisGlow 3s ease-in-out infinite alternate;
+}
+
+.aegis-count-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -5px;
+  background: #0d1117;
+  border: 1px solid rgba(255, 190, 74, 0.8);
+  color: #ffbe4a;
+  border-radius: 6px;
+  padding: 1px 4.5px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  font-family: var(--font-cinzel), serif;
+}
+
+@keyframes aegisGlow {
+  0% {
+    filter: drop-shadow(0 1px 3px rgba(255, 190, 74, 0.25));
+  }
+  100% {
+    filter: drop-shadow(0 3px 8px rgba(255, 190, 74, 0.6));
+  }
+}
+
+
 

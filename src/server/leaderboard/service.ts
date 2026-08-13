@@ -313,6 +313,7 @@ export function createLeaderboardService({
 							}
 						})(),
 						serverRank: p.serverRank ?? null,
+						aegisCount: p.aegisCount || 0,
 					};
 				})
 			);
@@ -367,6 +368,7 @@ export function createLeaderboardService({
 					shieldHoursLeft: p.shieldHoursLeft,
 					punishments: p.punishments,
 					serverRank: p.serverRank,
+					aegisCount: p.aegisCount,
 				};
 			});
 

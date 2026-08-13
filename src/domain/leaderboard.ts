@@ -36,5 +36,6 @@ export type LeaderboardDto = {
     shieldHoursLeft: number | null;
     punishments: Array<{ id: string; gamesLeft: number }>;
     serverRank: number | null;
+    aegisCount: number;
   }>;
 };

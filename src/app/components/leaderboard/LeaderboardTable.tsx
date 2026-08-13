@@ -162,6 +162,19 @@ function Sparkline({ results }: { results: RecentMatchResult[] }) {
   );
 }
 
+const AegisIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
+    {/* Center shield/crown */}
+    <path d="M14 6L18 10V18L14 22L10 18V10L14 6Z" fill="#ffbe4a" fillOpacity="0.15" stroke="#ffbe4a" strokeWidth="1.5" />
+    {/* Left wings */}
+    <path d="M10 10C8 7 4 8 3 13C2 17 5 19 10 20C8 18 8 14 10 10Z" fill="#ffbe4a" fillOpacity="0.3" stroke="#ffbe4a" strokeWidth="1.2" />
+    {/* Right wings */}
+    <path d="M18 10C20 7 24 8 25 13C26 17 23 19 18 20C20 18 20 14 18 10Z" fill="#ffbe4a" fillOpacity="0.3" stroke="#ffbe4a" strokeWidth="1.2" />
+    {/* Decorative inner elements */}
+    <circle cx="14" cy="14" r="2" fill="#ffbe4a" />
+  </svg>
+);
+
 // ─── Rank Hover Details Sub-Panel Component ─────────────────────────────────
 function RankHoverPanel({
   player,
@@ -264,6 +277,7 @@ export function LeaderboardTable({
             <th>Jugador</th>
             <th className="hide-on-mobile">Rol</th>
             <th>Rango & LP</th>
+            <th>Aegis</th>
             <th className="hide-on-mobile">Win rate</th>
             <th>Tendencia</th>
             <th>Diario</th>
@@ -356,6 +370,12 @@ export function LeaderboardTable({
                         </div>
                       </div>
                       <RankHoverPanel player={player} challengerCutoff={challengerCutoff} grandmasterCutoff={grandmasterCutoff} />
+                    </div>
+                  </td>
+                  <td className="aegis-cell-data text-center">
+                    <div className="aegis-icon-wrapper" title={`Doble LP: ${player.aegisCount} veces`}>
+                      <AegisIcon />
+                      <span className="aegis-count-badge">{player.aegisCount}</span>
                     </div>
                   </td>
                   <td className="hide-on-mobile">

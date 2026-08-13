@@ -59,6 +59,7 @@ export const players = pgTable(
     activePunishments: text('active_punishments').default('[]'),
     lastRefreshedAt: timestamp('last_refreshed_at', { withTimezone: true, mode: 'date' }),
     serverRank: integer('server_rank'),
+    aegisCount: integer('aegis_count').notNull().default(0),
   },
   (table) => [uniqueIndex('players_riot_id_unique').on(table.riotId)]
 );
