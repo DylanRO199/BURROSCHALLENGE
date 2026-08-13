@@ -343,7 +343,7 @@ export function LeaderboardClient({
       const refreshResponse = await fetch('/api/leaderboard/refresh', { method: 'POST' });
       if (!refreshResponse.ok) throw new Error('Falló la actualización');
 
-      const leaderboardResponse = await fetch('/api/leaderboard', { cache: 'no-store' });
+      const leaderboardResponse = await fetch(`/api/leaderboard?t=${Date.now()}`, { cache: 'no-store' });
       if (!leaderboardResponse.ok) throw new Error('No se pudo obtener el leaderboard');
 
       const leaderboard = (await leaderboardResponse.json()) as LeaderboardDto;
@@ -376,7 +376,7 @@ export function LeaderboardClient({
       if (pollRef.current) return;
       pollRef.current = true;
       try {
-        const res = await fetch('/api/leaderboard', { cache: 'no-store' });
+        const res = await fetch(`/api/leaderboard?t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const leaderboard = (await res.json()) as LeaderboardDto;
           setData(leaderboard);
@@ -396,7 +396,7 @@ export function LeaderboardClient({
       spectatorRef.current = true;
       try {
         await fetch('/api/leaderboard/spectator', { method: 'POST' });
-        const res = await fetch('/api/leaderboard', { cache: 'no-store' });
+        const res = await fetch(`/api/leaderboard?t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const leaderboard = (await res.json()) as LeaderboardDto;
           setData(leaderboard);
@@ -416,7 +416,7 @@ export function LeaderboardClient({
       rankRef.current = true;
       try {
         await fetch('/api/leaderboard/rank', { method: 'POST' });
-        const res = await fetch('/api/leaderboard', { cache: 'no-store' });
+        const res = await fetch(`/api/leaderboard?t=${Date.now()}`, { cache: 'no-store' });
         if (res.ok) {
           const leaderboard = (await res.json()) as LeaderboardDto;
           setData(leaderboard);
